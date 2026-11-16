@@ -10,7 +10,7 @@
 .ta-grad { position: relative; display: inline-block; }
 .ta-grad .ta-word { position: static; }
 .ta-grad .ta-item {
-  background-image: var(--grad-x);
+  background-image: var(--grad-text);
   background-repeat: no-repeat;
   -webkit-background-clip: text;
   background-clip: text;

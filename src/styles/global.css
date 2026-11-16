@@ -16,6 +16,8 @@
 
   --grad: linear-gradient(180deg, #ffffff 0%, #bdffff 42%, #1787b3 100%);
   --grad-x: linear-gradient(100deg, #ffffff 0%, #bdffff 45%, #1787b3 100%);
+  /* Градиент текста: радиальный, в центре акцент, к краям белый */
+  --grad-text: radial-gradient(50% 50% at 50% 50%, #bdffff 0%, #ffffff 100%);
 
   /* Цвет роли «Управленец» — единственный публичный пример */
   --role-manager: #3fb6e6;
@@ -68,7 +70,7 @@ button, input { font: inherit; color: inherit; }
   color: var(--text-3);
 }
 .gt {
-  background: var(--grad-x);
+  background: var(--grad-text);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -389,6 +391,8 @@ button, input { font: inherit; color: inherit; }
 .sec-label { display: block; margin-bottom: 16px; color: var(--text-3); }
 .sec-head h2 { font-size: clamp(30px, 3.8vw, 54px); line-height: 1.05; letter-spacing: -0.035em; max-width: 860px; }
 .sec-head .sub { margin-top: 18px; color: var(--text-2); max-width: 640px; }
+/* Роль и персонаж: подзаголовок в две строки — по ширине заголовка */
+#role .sec-head .sub { max-width: 860px; }
 @media (max-width: 860px) {
   .section { padding: 72px 0; }
   .sec-head { margin-bottom: 36px; }
@@ -503,59 +507,50 @@ button, input { font: inherit; color: inherit; }
 }
 
 /* ============ Role & character ============ */
-.terms3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--stack); margin-bottom: var(--stack); }
-.term {
+/* Персонаж, роль, талант — один блок, три пункта по очереди */
+.terms3 {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px;
+  margin-bottom: var(--stack);
   padding: 22px 24px;
   border-radius: var(--radius);
-  border: 1px solid var(--line);
   background: var(--surface);
 }
-.term .mono { color: var(--accent); }
-.term h3 { font-size: 26px; margin: 10px 0 4px; }
+.term { text-align: center; }
+.term h3 { font-size: 26px; margin: 0 0 4px; }
 .term p { color: var(--text-2); font-size: 15px; }
-.term .where { margin-top: 14px; font-size: 13px; color: var(--text-3); }
 
-.pair { display: grid; grid-template-columns: 1fr auto 1fr; align-items: stretch; gap: 0; }
-.pair-card {
-  position: relative;
-  border-radius: var(--radius-lg);
-  padding: 28px;
-  min-height: 340px;
-  display: flex;
-  flex-direction: column;
-  border: 1px solid var(--line);
-  overflow: hidden;
+/* Персонажи и роль: две карточки-фото в рамке + карточка таланта */
+.char-show { display: flex; align-items: center; gap: var(--stack); }
+.char-frame {
+  margin: 0; flex: 361 1 0; aspect-ratio: 361 / 493;
+  display: flex; padding: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 32px;
 }
-.pair-card.personal {
-  background:
-    radial-gradient(120% 80% at 50% 0%, rgba(63,182,230,.32) 0%, rgba(63,182,230,0) 60%),
-    var(--bg-2);
-}
-.pair-card.teamctx { background: var(--bg-2); }
-.pair-card .ctx { display: flex; justify-content: space-between; gap: 12px; }
-.pair-card .figure { flex: 1; display: grid; place-items: center; padding: 20px 0; }
-.pair-card .label .mono { display: block; margin-bottom: 4px; }
-.pair-card .label h3 { font-size: clamp(26px, 2.8vw, 36px); letter-spacing: -0.03em; }
-.pair-card .label p { color: var(--text-2); font-size: 15px; margin-top: 4px; }
-.pair-link { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; width: 120px; }
-.pair-link .line { width: 1px; flex: 1; background: linear-gradient(180deg, transparent, var(--accent), transparent); }
-.pair-link .chip {
-  padding: 6px 12px; border-radius: 999px;
-  font-family: var(--mono); font-size: 11px; letter-spacing: .05em; text-transform: uppercase;
-  background: var(--accent); color: var(--bg);
-}
-/* Изображения персонажей Королева / Король — единственная публичная пара */
-.char-duo { flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 20px 0 24px; }
-.char-duo figure { margin: 0; display: flex; flex-direction: column; gap: 10px; }
-.char-duo img {
-  display: block; width: 100%; height: auto; aspect-ratio: 3 / 4; object-fit: cover;
-  border-radius: 14px;
+.char-photo {
+  position: relative; flex: 1; overflow: hidden; isolation: isolate;
+  border-radius: 28px;
   background: var(--bg-3);
+  box-shadow: 0 0 200px rgba(189, 255, 255, 0.2);
 }
-.char-duo figcaption { color: var(--text-3); }
-.emblem { width: 150px; height: 150px; }
-.emblem.big { width: 190px; height: 190px; }
-.silhouette { width: 180px; height: 220px; }
+.char-photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.char-photo figcaption {
+  position: absolute; left: 0; right: 0; top: 0; height: 120px;
+  display: flex; justify-content: center; align-items: flex-start; padding: 16px 10px;
+  background: linear-gradient(0deg, rgba(29, 31, 33, 0) 17.5%, var(--bg) 100%);
+  font-size: 34px; font-weight: 400; line-height: 1.2; letter-spacing: 0.01em;
+  color: var(--accent);
+}
+.char-info {
+  flex: 320 1 0; align-self: stretch; margin-block: 4.5px;
+  display: flex; flex-direction: column; gap: 12px; padding: 16px;
+  border-radius: 32px;
+  background: rgba(255, 255, 255, 0.05);
+}
+.char-info-head { font-size: 20px; line-height: 25px; font-weight: 600; letter-spacing: -0.02em; }
+.char-info-body { display: flex; flex-direction: column; gap: 8px; padding-top: 16px; }
+.char-info-body p:first-child { font-size: 16px; line-height: 21px; }
+.char-info-body p + p { font-size: 15px; line-height: 20px; opacity: 0.5; }
 
 .match-table { margin-top: var(--stack); border: 1px solid var(--line); border-radius: var(--radius-lg); overflow: hidden; }
 .mt-row { display: grid; grid-template-columns: 220px 1fr 1fr; }
@@ -570,12 +565,13 @@ button, input { font: inherit; color: inherit; }
 .pair-note { margin-top: 16px; font-size: 14px; color: var(--text-3); }
 
 @media (max-width: 860px) {
-  .terms3 { grid-template-columns: 1fr; }
-  .pair { grid-template-columns: 1fr; }
-  .pair-card { min-height: 0; padding: 22px; }
-  .pair-card .figure { padding: 10px 0 18px; }
-  .pair-link { width: auto; flex-direction: row; height: 64px; }
-  .pair-link .line { height: 1px; width: auto; flex: 1; background: linear-gradient(90deg, transparent, var(--accent), transparent); }
+  .terms3 { grid-template-columns: 1fr; gap: 16px; padding: 20px; }
+  .char-show { flex-wrap: wrap; }
+  .char-frame { flex: 1 1 calc(50% - var(--stack)); border-radius: 24px; }
+  .char-photo { border-radius: 20px; }
+  .char-photo figcaption { height: 88px; padding: 12px 8px; font-size: 22px; }
+  .char-info { flex: 1 1 100%; margin: 0; border-radius: 24px; }
+  .char-info-body { padding-top: 8px; }
   .emblem { width: 110px; height: 110px; }
   .emblem.big { width: 130px; height: 130px; }
   .silhouette { width: 130px; height: 160px; }
@@ -1070,7 +1066,7 @@ button, input { font: inherit; color: inherit; }
 .section + .section { border-top: 0; }
 .footer, .footer-bottom { border-top-color: rgba(255, 255, 255, 0.06); }
 
-.term, .pair-card, .format, .pcard, .brands, .case, .team, .rcard, .next,
+.term, .format, .pcard, .brands, .case, .team, .rcard, .next,
 .form-card, .jump, .match-table, .demo, .scene, .case-viz, .flow3 .st, .stage,
 .calc-step, .why { border: 0; }
 

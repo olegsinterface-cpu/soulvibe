@@ -1,8 +1,9 @@
 import type { ReactNode } from 'react'
 import { Link } from '../router'
-import { CASES, DIALOG, HERO, LINKS, ROLE_TABLE, TERMS } from '../content'
-import { Arrow, ArrowDown, Emblem } from '../components/Icons'
+import { CASES, CHARACTERS, DIALOG, HERO, LINKS, ROLE_CARD, ROLE_TABLE, TERMS } from '../content'
+import { Arrow, ArrowDown } from '../components/Icons'
 import EcosystemBeams from '../components/EcosystemBeams'
+import RoleFan from '../components/RoleFan'
 import { SolarIcon } from '../components/ui/SolarIcon'
 import { TextAnimate, textAnimateEnd } from '../components/ui/TextAnimate'
 
@@ -99,7 +100,6 @@ function Ecosystem() {
 
 /* ---------------- 03 Role & character ---------------- */
 function RoleCharacter() {
-  const where = ['узнаёте в расчёте', 'показываем на сайте', 'знакомитесь в боте']
   return (
     <section className="section" id="role">
       <div className="wrap">
@@ -110,47 +110,28 @@ function RoleCharacter() {
           sub="На сайте вы узнаёте свою роль. Персонаж — её игровой образ — открывается в боте с ИИ-ментором. Ниже — один пример такого соответствия."
         />
         <div className="terms3">
-          {TERMS.map((t, i) => (
+          {['Персонаж', 'Роль', 'Талант'].map((k) => TERMS.find((t) => t.term === k)!).map((t) => (
             <div className="term" key={t.term}>
-              <span className="mono">0{i + 1}</span>
               <h3>{t.term}</h3>
               <p>{t.def}</p>
-              <p className="where">→ {where[i]}</p>
             </div>
           ))}
         </div>
 
-        <div className="pair">
-          <div className="pair-card personal grain">
-            <div className="ctx"><span className="mono">Личный продукт · в боте</span><span className="mono">♛ общий знак</span></div>
-            <div className="char-duo">
-              <figure>
-                <img src="/characters/queen.jpg" alt="Персонаж Королева: девушка в голубом платье на белом троне среди облаков" loading="lazy" width="753" height="1000" />
-                <figcaption className="mono">Королева</figcaption>
-              </figure>
-              <figure>
-                <img src="/characters/king.jpg" alt="Персонаж Король: мужчина в короне и голубой мантии на ступенях среди облаков" loading="lazy" width="753" height="1000" />
-                <figcaption className="mono">Король</figcaption>
-              </figure>
-            </div>
-            <div className="label">
-              <span className="mono">Персонаж</span>
-              <h3>Королева / Король</h3>
-              <p>игровой образ, с которым вы работаете каждый день</p>
-            </div>
-          </div>
-          <div className="pair-link" aria-hidden="true">
-            <span className="line" />
-            <span className="chip">соответствует</span>
-            <span className="line" />
-          </div>
-          <div className="pair-card teamctx">
-            <div className="ctx"><span className="mono">Командный контекст · на сайте</span><span className="mono">♛ общий знак</span></div>
-            <div className="figure"><Emblem className="emblem big" /></div>
-            <div className="label">
-              <span className="mono">Роль</span>
-              <h3>Управленец</h3>
-              <p>вклад человека в совместную работу</p>
+        <div className="char-show">
+          {CHARACTERS.map((c) => (
+            <figure className="char-frame" key={c.name}>
+              <div className="char-photo">
+                <img src={c.img} alt={c.alt} loading="lazy" width="753" height="1000" />
+                <figcaption>{c.name}</figcaption>
+              </div>
+            </figure>
+          ))}
+          <div className="char-info">
+            <b className="char-info-head">{ROLE_CARD.role}</b>
+            <div className="char-info-body">
+              <p>{ROLE_CARD.lead}</p>
+              <p>{ROLE_CARD.text}</p>
             </div>
           </div>
         </div>
@@ -522,7 +503,8 @@ export default function Home() {
     <>
       <Hero />
       <Ecosystem />
-      <RoleCharacter />
+      {/* Вариант секции: ?role=1 — прежний (блоки), по умолчанию — веер карточек */}
+      {new URLSearchParams(window.location.search).get('role') === '1' ? <RoleCharacter /> : <RoleFan />}
       <Formats />
       <Philosophy />
       <Cases />
