@@ -1,0 +1,29 @@
+/* Свечение границы (edge glow) — вспышка рамки блока схемы в точке, куда пришёл импульс.
+   Точку задают --hit-x / --hit-y (координаты внутри блока), запуск — класс .is-hit.
+   Видна только узкая полоска рамки вокруг точки; разгорается и мягко гаснет. */
+.edge-glow { position: relative; }
+.edge-glow::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1.5px;
+  background: radial-gradient(circle 64px at var(--hit-x, 0) var(--hit-y, 50%),
+    #ffffff 0%, #bdffff 22%, rgba(23, 135, 179, 0.7) 55%, rgba(23, 135, 179, 0) 100%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  filter: drop-shadow(0 0 4px rgba(189, 255, 255, 0.7));
+  opacity: 0;
+  pointer-events: none;
+}
+.edge-glow.is-hit::after { animation: edge-glow 3s linear forwards; }
+/* Мягко разгорается ~0,7 с и долго гаснет ~2,3 с — без резкого мигания */
+@keyframes edge-glow {
+  0% { opacity: 0; animation-timing-function: cubic-bezier(0.4, 0, 0.6, 1); }
+  24% { opacity: 0.9; animation-timing-function: cubic-bezier(0.33, 0, 0.2, 1); }
+  100% { opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .edge-glow.is-hit::after { animation: none; }
+}

@@ -1,0 +1,133 @@
+/* Схема экосистемы с анимированными лучами */
+.beams {
+  position: relative;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: 48px 40px;
+  background:
+    radial-gradient(40% 60% at 50% 50%, rgba(23, 135, 179, 0.16), transparent 70%),
+    linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px) 0 0 / 40px 40px,
+    linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px) 0 0 / 40px 40px,
+    var(--bg-2);
+  overflow: hidden;
+}
+
+.beams-svg { position: absolute; inset: 0; pointer-events: none; z-index: 0; overflow: visible; }
+.beam-base { fill: none; stroke: rgba(255, 255, 255, 0.12); stroke-width: 1.5; }
+/* Энергия: один штрих по самой линии с плавным градиентом блика (см. ui/shine.ts).
+   Положение штриха и направление градиента обновляются каждый кадр в компоненте. */
+.beam-pulse {
+  fill: none;
+  stroke-width: 3;
+  stroke-linecap: round;
+  opacity: 0;
+}
+@media (prefers-reduced-motion: reduce) {
+  .beam-pulse { display: none; }
+}
+
+.beams-grid {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 240px minmax(0, 1fr);
+  gap: 72px;
+  align-items: center;
+}
+.beams-col { display: flex; flex-direction: column; gap: 28px; }
+.beams-col.left { align-items: flex-end; }
+.beams-col.right { align-items: flex-start; }
+.beams-group { display: flex; flex-direction: column; gap: 8px; width: 100%; max-width: 340px; }
+.beams-label { font-size: 15px; font-weight: 500; color: var(--text-3); }
+.beams-note { font-size: 13px; color: var(--text-3); border-left: 1px solid var(--line-2); padding-left: 12px; }
+
+/* Узел — статичный, без hover и курсора-руки */
+.bnode {
+  position: relative;
+  display: grid;
+  grid-template-columns: 44px 1fr;
+  gap: 14px;
+  align-items: start;
+  padding: 16px 18px;
+  border-radius: 16px;
+  background: #2b2f33;
+  cursor: default;
+}
+/* Тихий постоянный контур */
+.bnode::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  pointer-events: none;
+}
+/* Иконка: скруглённый квадрат на светлой подложке */
+.bnode-ico {
+  width: 44px; height: 44px;
+  border-radius: 12px;
+  display: grid; place-items: center;
+  color: rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.08);
+}
+.bnode-ico svg { width: 22px; height: 22px; }
+.bnode h4 { font-size: 18px; font-weight: 500; letter-spacing: -0.02em; line-height: 1.25; }
+.bnode p { font-size: 14px; color: var(--text-3); margin-top: 2px; line-height: 1.4; }
+.bnode-status {
+  grid-column: 1 / -1; /* на всю ширину блока, под иконкой и текстом */
+  display: flex; align-items: center; justify-content: center;
+  padding: 8px 12px;
+  border-radius: 12px; /* как у подложки иконки */
+  font-family: var(--mono); font-size: 11px; letter-spacing: .04em; text-transform: uppercase; text-align: center;
+  color: var(--text-2); background: rgba(255, 255, 255, 0.06); /* нейтральная плашка, без акцента */
+}
+
+/* Центр — общая основа */
+.beams-hub-wrap { display: flex; flex-direction: column; align-items: center; gap: 24px; text-align: center; }
+.beams-hub {
+  position: relative;
+  width: 128px; height: 128px;
+  border-radius: 50%;
+  display: grid; place-items: center;
+  /* Радиальный градиент из центра: светлое ядро → акцент → глубокий синий → фон */
+  background: radial-gradient(circle at 50% 50%,
+    rgba(189, 255, 255, 0.55) 0%,
+    rgba(189, 255, 255, 0.28) 22%,
+    rgba(23, 135, 179, 0.45) 48%,
+    rgba(23, 135, 179, 0.14) 72%,
+    #1d1f21 100%);
+  border: 1px solid rgba(189, 255, 255, 0.35);
+  box-shadow: 0 0 60px -10px rgba(23, 135, 179, 0.8);
+}
+.beams-hub-ring {
+  position: absolute; inset: -9px; /* 8px от внешней рамки круга (1px) до пунктирного кольца */
+  border-radius: 50%;
+  border: 1px dashed rgba(255, 255, 255, 0.18);
+}
+/* Показываем только знак из логотипа (левая часть файла) */
+.beams-hub-mark { width: 49px; height: 64px; overflow: hidden; display: block; }
+.beams-hub-mark img { height: 64px; width: auto; max-width: none; display: block; }
+.beams-hub-text .mono { display: block; margin-bottom: 4px; }
+.beams-hub-text b { display: block; font-size: 16px; font-weight: 500; letter-spacing: -0.01em; line-height: 1.3; color: var(--text-2); /* приглушённо, но ярче подписи «Общая основа» */ }
+
+/* Телефон: центр сверху слева, ветви — колонкой справа от общей оси */
+@media (max-width: 900px) {
+  .beams { padding: 24px 16px; }
+  .beams-grid { display: flex; flex-direction: column; align-items: stretch; gap: 28px; }
+  .beams-hub-wrap { order: -1; flex-direction: row; align-items: center; text-align: left; gap: 16px; }
+  .beams-hub { width: 64px; height: 64px; flex: none; }
+  .beams-hub-ring { inset: -9px; }
+  .beams-hub-mark { width: 24px; height: 32px; }
+  .beams-hub-mark img { height: 32px; }
+  .beams-hub-text b { font-size: 15px; }
+  .beams-col, .beams-col.left, .beams-col.right { align-items: stretch; padding-left: 56px; gap: 28px; }
+  .beams-group { max-width: none; }
+  .bnode { grid-template-columns: 36px 1fr; gap: 12px; padding: 14px; }
+  .bnode-ico { width: 36px; height: 36px; border-radius: 10px; }
+  .bnode-status { border-radius: 10px; }
+  .bnode-ico svg { width: 20px; height: 20px; }
+  .bnode h4 { font-size: 17px; }
+}
+
+/* Без внешней рамки у самой схемы */
+.beams { border: 0; }
