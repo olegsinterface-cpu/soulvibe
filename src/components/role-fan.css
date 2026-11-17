@@ -84,3 +84,6 @@
   .fan-talent p { font-size: 12px; line-height: 16px; }
   .role-fan h2 { margin-top: 32px; }
 }
+/* Наклон за курсором у Королевы — вращение вокруг центра карточки */
+.fan-card.is-main.tilt { transform-origin: 50% 50%; }
+.fan { perspective: 1500px; }

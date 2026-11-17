@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
+import HeroDots from '../components/HeroDots'
 import { Link, navigate } from '../router'
 import { LINKS } from '../content'
 import { Arrow } from '../components/Icons'
@@ -103,7 +104,9 @@ export default function Calc() {
   return (
     <section className="calc">
       <div className="wrap calc-grid">
-        <aside className="calc-side curtain">
+        <aside className="calc-side">
+          {/* фон — те же волны из точек, что в hero */}
+          <HeroDots className="in-calc" />
           <Link to="/" className="back-link"><span style={{ transform: 'rotate(180deg)', display: 'inline-flex' }}><Arrow size={14} /></span>На главную</Link>
           <span className="status-pill calc-free">Бесплатно</span>
           <h1>Расчёт таланта</h1>
@@ -135,33 +138,39 @@ export default function Calc() {
 
           <form className="form" onSubmit={onSubmit} noValidate>
             <div className="field">
-              <label htmlFor="birth">Дата рождения<em>*</em></label>
-              <input
-                id="birth" name="birth" className="input" inputMode="numeric" autoComplete="bday"
-                placeholder="ДД.ММ.ГГГГ" value={v.birth} disabled={busy}
-                aria-invalid={!!errors.birth} aria-describedby={errors.birth ? 'birth-err' : 'birth-help'}
-                onChange={(e) => set('birth', maskDate(e.target.value))}
-              />
+              <div className="float">
+                <input
+                  id="birth" name="birth" className="input" inputMode="numeric" autoComplete="bday"
+                  placeholder="ДД.ММ.ГГГГ" value={v.birth} disabled={busy}
+                  aria-invalid={!!errors.birth} aria-describedby={errors.birth ? 'birth-err' : 'birth-help'}
+                  onChange={(e) => set('birth', maskDate(e.target.value))}
+                />
+                <label htmlFor="birth">Дата рождения<em>*</em></label>
+              </div>
               {errors.birth ? <p className="err" id="birth-err">{errors.birth}</p> : <p className="help" id="birth-help">Например, 14.03.1990</p>}
             </div>
             <div className="field">
-              <label htmlFor="email">Email<em>*</em></label>
-              <input
-                id="email" name="email" type="email" className="input" autoComplete="email"
-                placeholder="name@example.com" value={v.email} disabled={busy}
-                aria-invalid={!!errors.email} aria-describedby={errors.email ? 'email-err' : undefined}
-                onChange={(e) => set('email', e.target.value.trim())}
-              />
+              <div className="float">
+                <input
+                  id="email" name="email" type="email" className="input" autoComplete="email"
+                  placeholder="name@example.com" value={v.email} disabled={busy}
+                  aria-invalid={!!errors.email} aria-describedby={errors.email ? 'email-err' : undefined}
+                  onChange={(e) => set('email', e.target.value.trim())}
+                />
+                <label htmlFor="email">Email<em>*</em></label>
+              </div>
               {errors.email && <p className="err" id="email-err">{errors.email}</p>}
             </div>
             <div className="field">
-              <label htmlFor="tg">Telegram<em>*</em></label>
-              <input
-                id="tg" name="tg" className="input" autoComplete="off" autoCapitalize="none"
-                placeholder="@username" value={v.tg} disabled={busy}
-                aria-invalid={!!errors.tg} aria-describedby={errors.tg ? 'tg-err' : 'tg-help'}
-                onChange={(e) => set('tg', e.target.value.trim())}
-              />
+              <div className="float">
+                <input
+                  id="tg" name="tg" className="input" autoComplete="off" autoCapitalize="none"
+                  placeholder="@username" value={v.tg} disabled={busy}
+                  aria-invalid={!!errors.tg} aria-describedby={errors.tg ? 'tg-err' : 'tg-help'}
+                  onChange={(e) => set('tg', e.target.value.trim())}
+                />
+                <label htmlFor="tg">Telegram<em>*</em></label>
+              </div>
               {errors.tg ? <p className="err" id="tg-err">{errors.tg}</p> : <p className="help" id="tg-help">Формат: @username — имя пользователя из настроек Telegram</p>}
             </div>
 

@@ -1,0 +1,164 @@
+/* Карусель кейсов: активная карточка по центру, соседние — за ней по бокам */
+.cc { position: relative; }
+#cases { overflow-x: clip; } /* боковые карточки на узком экране не дают горизонтальной прокрутки */
+.cc-anchor { position: absolute; top: -120px; left: 0; width: 0; height: 0; }
+.cc-stage {
+  --card-w: min(760px, 82%);
+  --shift: 58%;                 /* насколько боковые карточки выдвинуты из-за центральной */
+  position: relative;
+  /* все карточки в одной ячейке сетки: высота сцены = самая высокая карточка */
+  display: grid; justify-items: center; align-items: center;
+  perspective: 1600px;
+  touch-action: pan-y;          /* вертикальная прокрутка страницы, горизонтальный жест — свайп */
+  user-select: none;
+}
+.cc-card {
+  grid-area: 1 / 1;
+  width: var(--card-w); align-self: stretch;
+  display: flex; flex-direction: column;
+  padding: 40px;
+  border-radius: var(--radius-lg);
+  background: var(--bg-2);
+  box-shadow: 0 30px 60px -30px rgba(0, 0, 0, 0.7);
+  /* центр — на месте; боковые — сдвинуты, меньше, темнее и позади */
+  /* боковые — повёрнуты к центру, отодвинуты вглубь, размыты и темнее */
+  transform:
+    translateX(calc(var(--o) * var(--shift)))
+    translateZ(calc(var(--a) * -160px))
+    rotateY(calc(var(--o) * -38deg))
+    scale(calc(1 - var(--a) * 0.08));
+  z-index: calc(10 - var(--a));
+  filter: brightness(calc(1 - var(--a) * 0.4)) blur(calc(var(--a) * 3px));
+  transition:
+    transform .6s cubic-bezier(.22, 1, .36, 1),
+    filter .6s ease,
+    background-color .6s ease;
+  cursor: pointer;
+}
+.cc-card.is-active {
+  cursor: auto;
+  background:
+    radial-gradient(70% 60% at 100% 0%, rgba(23, 135, 179, 0.22) 0%, rgba(23, 135, 179, 0) 70%),
+    #25292c;
+}
+/* содержимое боковых карточек приглушено, чтобы не спорило с активной */
+.cc-card > * { transition: opacity .5s ease; }
+.cc-card:not(.is-active) > * { opacity: 0.55; }
+.cc-card:not(.is-active):hover { filter: brightness(0.75) blur(2px); }
+
+.cc-label { font-size: 14px; color: var(--text-3); }
+.cc-card h3 { margin-top: 8px; font-size: 30px; font-weight: 500; letter-spacing: -0.02em; }
+/* Задача / Что делали / Результат — тремя колонками: подпись сверху, текст ниже, тонкие разделители между */
+.cc-rows {
+  margin: 28px 0 0;
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+.cc-rows > div { display: flex; flex-direction: column; gap: 8px; padding: 18px 20px; }
+.cc-rows > div:first-child { padding-left: 0; }
+.cc-rows > div:last-child { padding-right: 0; }
+.cc-rows > div + div { border-left: 1px solid rgba(255, 255, 255, 0.07); }
+.cc-rows dt { font-size: 13px; color: var(--text-3); }
+.cc-rows dd { margin: 0; font-size: 15px; line-height: 1.5; color: var(--text); }
+.cc-rows > div:last-child dd { font-weight: 600; } /* результат — жирным, без акцента */
+
+/* SoulMind: было → стало. Слева — приглушённо (исходная идея), справа — со свечением (то, к чему пришли);
+   между ними круглая стрелка */
+.cc-stages { margin-top: 28px; display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: stretch; gap: 0; }
+.cc-stage-box {
+  position: relative; overflow: hidden; isolation: isolate;
+  display: flex; flex-direction: column; justify-content: flex-end; gap: 4px;
+  min-height: 120px; padding: 20px 22px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.035);
+}
+.cc-stage-box span { font-size: 13px; color: var(--text-3); }
+.cc-stage-box b { font-size: 19px; font-weight: 500; letter-spacing: -0.01em; color: var(--text-2); }
+.cc-stage-box.is-last { background: rgba(255, 255, 255, 0.08); } /* чуть светлее левого, без акцента */
+.cc-stage-box.is-last span { color: var(--text-3); }
+.cc-stage-box.is-last b { color: #ffffff; font-weight: 600; }
+.cc-stage-arrow {
+  align-self: center; z-index: 1;
+  width: 40px; height: 40px; margin: 0 -12px;
+  display: grid; place-items: center; border-radius: 50%;
+  background: #33373a; color: rgba(255, 255, 255, 0.55); /* приглушённо — указатель, а не кнопка */
+  box-shadow: 0 0 0 6px #25292c; /* «вырез» в фоне карточки вокруг стрелки */
+  pointer-events: none;
+}
+
+/* Фрагмент отзыва — как выделенный текст: серая подложка по каждой строке, курсоры выделения по краям */
+.cc-quote { margin: 28px 0 0; }
+.cc-quote blockquote { margin: 0; font-size: 19px; line-height: 1.6; letter-spacing: -0.01em; color: var(--text); }
+.cc-hl {
+  padding: 8px 12px; /* подложки соседних строк заходят друг на друга — щелей нет */
+  border-radius: 16px;
+  background: #383c3f; /* непрозрачный: на перекрытии строк не темнеет */
+  color: inherit;
+  -webkit-box-decoration-break: clone; box-decoration-break: clone; /* скругление и отступы у каждой строки */
+}
+.cc-caret {
+  position: relative; display: inline-block;
+  width: 2px; height: 1.35em; margin: 0 2px;
+  vertical-align: -0.3em;
+  background: rgba(255, 255, 255, 0.85);
+}
+.cc-caret::before {
+  content: ''; position: absolute; left: 50%; width: 8px; height: 8px; margin-left: -4px;
+  border-radius: 50%; background: inherit;
+}
+.cc-caret.is-start::before { top: -6px; }
+.cc-caret.is-end::before { bottom: -6px; }
+.cc-quote figcaption { margin-top: 16px; font-size: 14px; color: var(--text-3); }
+
+.cc-cta { margin-top: auto; align-self: flex-end; } /* кнопка — по правому краю карточки */
+.cc-card > :nth-last-child(2) { margin-bottom: 28px; } /* отступ до кнопки, кнопка прижата к низу */
+
+/* Стрелки — поверх боковых карточек, по вертикальному центру */
+.cc-arrow {
+  position: absolute; top: 50%; z-index: 20;
+  width: 64px; height: 64px; margin-top: -32px;
+  display: grid; place-items: center;
+  border: 0; border-radius: 50%; background: none;
+  color: rgba(255, 255, 255, 0.85); cursor: pointer;
+  filter: drop-shadow(0 4px 14px rgba(0, 0, 0, 0.5));
+  transition: color .2s ease, transform .25s cubic-bezier(.22, 1, .36, 1);
+}
+.cc-arrow.is-prev { left: calc(50% - var(--card-w) / 2 - 96px); transform: scaleX(-1); }
+.cc-arrow.is-next { right: calc(50% - var(--card-w) / 2 - 96px); }
+.cc-arrow:hover { color: #fff; }
+.cc-arrow.is-prev:hover { transform: scaleX(-1) translateX(4px); }
+.cc-arrow.is-next:hover { transform: translateX(4px); }
+.cc-arrow:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+/* Индикатор под каруселью */
+.cc-nav { margin-top: 32px; display: flex; justify-content: center; }
+.cc-dot:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.cc-dots { display: flex; gap: 8px; }
+.cc-dot {
+  width: 8px; height: 8px; padding: 0; border: 0; border-radius: 4px;
+  background: rgba(255, 255, 255, 0.2); cursor: pointer;
+  transition: width .35s cubic-bezier(.22, 1, .36, 1), background-color .35s ease;
+}
+.cc-dot.is-on { width: 24px; background: rgba(255, 255, 255, 0.7); }
+
+@media (max-width: 860px) {
+  .cc-stage { --card-w: 86%; --shift: 54%; }
+  .cc-stages { grid-template-columns: 1fr; }
+  .cc-stage-box { min-height: 100px; }
+  .cc-stage-arrow { justify-self: center; margin: -12px 0; transform: rotate(90deg); }
+  .cc-rows { grid-template-columns: 1fr; }
+  .cc-rows > div { padding: 14px 0; gap: 4px; }
+  .cc-rows > div + div { border-left: 0; border-top: 1px solid rgba(255, 255, 255, 0.07); }
+  .cc-rows dd { font-size: 15px; }
+  .cc-quote blockquote { font-size: 16px; }
+  .cc-cta { width: 100%; justify-content: center; }
+  .cc-card { padding: 24px 20px; }
+  .cc-card h3 { font-size: 26px; }
+  .cc-arrow { width: 44px; height: 44px; margin-top: -22px; }
+  .cc-arrow svg { width: 32px; height: 32px; }
+  .cc-arrow.is-prev { left: -4px; }
+  .cc-arrow.is-next { right: -4px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cc-card, .cc-card > * { transition: none; }
+}

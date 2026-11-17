@@ -2,6 +2,7 @@ import type { CSSProperties } from 'react'
 import { Link } from '../router'
 import { ROLE_FAN } from '../content'
 import { Arrow } from './Icons'
+import { TiltCard } from './ui/TiltCard'
 import './role-fan.css'
 
 /* Альтернативный вариант секции «Роль и персонаж»:
@@ -25,7 +26,7 @@ export default function RoleFan() {
           {SLOTS.map((pos) => {
             if (pos === 0) {
               return (
-                <figure className="fan-card is-main" key={pos} style={slot(pos)}>
+                <TiltCard as="figure" className="fan-card is-main" key={pos} style={slot(pos)}>
                   <div className="fan-photo">
                     <img src="/characters/queen.jpg" alt="Персонаж Королева: девушка в голубом платье на белом троне среди облаков" width="753" height="1000" />
                     <figcaption>Королева</figcaption>
@@ -34,7 +35,7 @@ export default function RoleFan() {
                       <p>{ROLE_FAN.talent}</p>
                     </div>
                   </div>
-                </figure>
+                </TiltCard>
               )
             }
             const src = `/characters/hidden-${++hidden}.jpg`
