@@ -3,6 +3,7 @@ import HeroDots from '../components/HeroDots'
 import { Link, navigate } from '../router'
 import { LINKS } from '../content'
 import { Arrow } from '../components/Icons'
+import TalentMap from '../components/TalentMap'
 
 type Values = { birth: string; email: string; tg: string; consent: boolean }
 type Errors = Partial<Record<keyof Values, string>>
@@ -102,6 +103,7 @@ export default function Calc() {
   const busy = status === 'loading'
 
   return (
+    <>
     <section className="calc">
       <div className="wrap calc-grid">
         <aside className="calc-side">
@@ -242,5 +244,13 @@ export default function Calc() {
         <button className="btn btn-ghost review-min" onClick={() => setPanel(true)}>Состояния</button>
       )}
     </section>
+
+    {/* Карта талантов — по схеме заказчика */}
+    <section className="tmap-sec">
+      <div className="wrap">
+        <TalentMap />
+      </div>
+    </section>
+    </>
   )
 }

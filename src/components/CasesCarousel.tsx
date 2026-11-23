@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, useLocation } from '../router'
 import { Arrow } from './Icons'
+import { SolarIcon } from './ui/SolarIcon'
 import './cases-carousel.css'
 
 /* Карусель кейсов в объёме: активная карточка по центру, две другие — повёрнуты к ней, размыты и позади.
@@ -103,15 +104,15 @@ export default function CasesCarousel({ items }: { items: CaseCard[] }) {
               )}
               {c.quote && (
                 <figure className="cc-quote">
-                  {/* Цитата как выделенный текст: подложка по строкам и курсоры выделения по краям */}
-                  <blockquote>
-                    <span className="cc-caret is-start" aria-hidden="true" />
-                    <mark className="cc-hl">{c.quote.text}</mark>
-                    <span className="cc-caret is-end" aria-hidden="true" />
-                  </blockquote>
-                  <figcaption>
-                    {c.quote.by}
+                  {/* Отзыв: аватар с иконкой, имя и подпись, ниже — текст */}
+                  <figcaption className="cc-quote-author">
+                    <span className="cc-quote-avatar" aria-hidden="true"><SolarIcon name="user" size={20} /></span>
+                    <span className="cc-quote-who">
+                      <b>{c.quote.by.split(', ')[0]}</b>
+                      {c.quote.by.includes(', ') && <small>{c.quote.by.split(', ').slice(1).join(', ')}</small>}
+                    </span>
                   </figcaption>
+                  <blockquote>{c.quote.text}</blockquote>
                 </figure>
               )}
               {c.cta.href

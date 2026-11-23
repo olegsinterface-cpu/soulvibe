@@ -1,4 +1,4 @@
-import { forwardRef, useEffect, useLayoutEffect, useRef, useState, type ReactNode, type RefObject } from 'react'
+import { forwardRef, useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode, type RefObject } from 'react'
 import { asset } from '../router'
 import './ecosystem-beams.css'
 import { SolarIcon } from './ui/SolarIcon'
@@ -36,8 +36,18 @@ const Node = forwardRef<HTMLDivElement, NodeProps>(({ icon, title, caption, stat
 ))
 Node.displayName = 'Node'
 
-/* ---------- Расчёт линий от центра к узлам ---------- */
-function useBeamPaths(container: RefObject<HTMLElement>, hub: RefObject<HTMLElement>, nodes: RefObject<HTMLElement>[]) {
+/* ---------- Расчёт линий: дерево от логотипа вниз ----------
+   Десктоп: ствол из-под круга с логотипом, развилка к плашкам направлений,
+   от каждой плашки — ветки к её блокам (входят в блок сверху по центру).
+   Телефон: ствол по оси круга вниз, к каждому блоку поворот вправо. */
+const TREE_MQ = '(min-width: 1025px)'
+/** К какой плашке направления относится каждый блок */
+const GROUP_OF = [0, 0, 1, 1, 2]
+
+function useBeamPaths(
+  container: RefObject<HTMLElement>, hub: RefObject<HTMLElement>,
+  groups: RefObject<HTMLElement>[], nodes: RefObject<HTMLElement>[],
+) {
   const [state, setState] = useState<{ w: number; h: number; paths: string[] }>({ w: 0, h: 0, paths: [] })
 
   useLayoutEffect(() => {
@@ -51,18 +61,22 @@ function useBeamPaths(container: RefObject<HTMLElement>, hub: RefObject<HTMLElem
         cx: r.left - cr.left + r.width / 2, cy: r.top - cr.top + r.height / 2,
       })
       const H = rel(h.getBoundingClientRect())
-      const paths = nodes.map((n) => {
-        if (!n.current) return ''
+      const tree = window.matchMedia(TREE_MQ).matches
+      const paths = nodes.map((n, i) => {
+        const g = groups[GROUP_OF[i]]?.current
+        if (!n.current || !g) return ''
         const N = rel(n.current.getBoundingClientRect())
-        if (N.l >= H.r - 1) {
-          const mx = (H.r + N.l) / 2
-          return `M${H.r},${H.cy} C${mx},${H.cy} ${mx},${N.cy} ${N.l},${N.cy}`
+        if (tree) {
+          const G = rel(g.getBoundingClientRect())
+          // ствол → S-изгиб к плашке → сквозь плашку → S-изгиб к блоку
+          const yA = H.b + 18
+          const k1 = (G.t - yA) * 0.55
+          const yB = G.b + 6
+          const k2 = (N.t - yB) * 0.55
+          return `M${H.cx},${H.b} L${H.cx},${yA} C${H.cx},${yA + k1} ${G.cx},${G.t - k1} ${G.cx},${G.t}` +
+            ` L${G.cx},${yB} C${G.cx},${yB + k2} ${N.cx},${N.t - k2} ${N.cx},${N.t}`
         }
-        if (N.r <= H.l + 1) {
-          const mx = (H.l + N.r) / 2
-          return `M${H.l},${H.cy} C${mx},${H.cy} ${mx},${N.cy} ${N.r},${N.cy}`
-        }
-        // узел ниже центра (телефон): вниз по оси центра, затем поворот к узлу
+        // телефон: вниз по оси центра, затем поворот к блоку
         const x = H.cx
         const r = Math.min(16, Math.max(0, N.l - x))
         return `M${x},${H.b} L${x},${N.cy - r} Q${x},${N.cy} ${x + r},${N.cy} L${N.l},${N.cy}`
@@ -91,7 +105,10 @@ export default function EcosystemBeams() {
   const n3 = useRef<HTMLDivElement>(null)
   const n4 = useRef<HTMLDivElement>(null)
   const n5 = useRef<HTMLDivElement>(null)
-  const { w, h, paths } = useBeamPaths(container, hub, [n1, n2, n3, n4, n5])
+  const g1 = useRef<HTMLDivElement>(null)
+  const g2 = useRef<HTMLDivElement>(null)
+  const g3 = useRef<HTMLDivElement>(null)
+  const { w, h, paths } = useBeamPaths(container, hub, [g1, g2, g3], [n1, n2, n3, n4, n5])
 
   const svgRef = useRef<SVGSVGElement>(null)
   const nodeRefs = [n1, n2, n3, n4, n5]
@@ -198,43 +215,40 @@ export default function EcosystemBeams() {
             </linearGradient>
           ))}
         </defs>
-        {paths.map((d, i) => <path key={i} d={d} className="beam-base" />)}
+        <g className="beam-glow">{paths.map((d, i) => <path key={i} d={d} className="beam-base" />)}</g>
         {paths.map((d, i) => d && (
           <path key={`p${i}`} d={d} className="beam-pulse" stroke={`url(#beam-pulse-grad-${i})`} />
         ))}
       </svg>
 
-      <div className="beams-grid">
-        <div className="beams-col left">
-          <div className="beams-group">
-            <div className="beams-label">Личный путь</div>
-            <Node ref={n1} icon={I.calc} title="Расчёт таланта" caption="бесплатно, на сайте · узнаёте роль" />
-            <Node ref={n2} icon={I.mentor} title="ИИ-ментор" caption="Telegram-бот · узнаёте персонажа" />
-          </div>
+      <div className="beams-hub-wrap">
+        <div className="beams-hub-text">
+          <span className="mono">Общая основа</span>
+          <b>Методология и игровая философия</b>
         </div>
-
-        <div className="beams-hub-wrap">
-          <div className="beams-hub" ref={hub}>
-            <span className="beams-hub-ring" aria-hidden="true" />
-            <span className="beams-hub-mark" aria-hidden="true"><img src={asset('/logo.svg')} alt="" /></span>
-          </div>
-          <div className="beams-hub-text">
-            <span className="mono">Общая основа</span>
-            <b>Методология и игровая философия</b>
-          </div>
+        <div className="beams-hub" ref={hub}>
+          <span className="beams-hub-mark" aria-hidden="true"><img src={asset('/logo.svg')} alt="" /></span>
         </div>
+      </div>
 
-        <div className="beams-col right">
-          <div className="beams-group">
-            <div className="beams-label">Идеи и команды</div>
-            <Node ref={n3} icon={I.idea} title="SoulMind" caption="игра для идей · индивидуально или командой" />
-            <Node ref={n4} icon={I.team} title="Dream Team" caption="программа для собственников и руководителей" />
-            <p className="beams-note">Мероприятия проходят в форматах SoulMind и Dream Team</p>
-          </div>
-          <div className="beams-group">
-            <div className="beams-label">Развитие экосистемы</div>
-            <Node ref={n5} icon={I.collab} title="Коллаборации с брендами" caption="украшения, ароматы, одежда и другие направления" status="Направление открыто для обсуждения" />
-          </div>
+      {/* На десктопе группы «растворяются» (display: contents) и раскладываются в одну сетку:
+          личный путь слева, идеи и команды справа, между ними проходит ствол;
+          развитие экосистемы — внизу по центру, на продолжении ствола */}
+      <div className="beams-tree">
+        <div className="tree-group" style={{ '--from': 1, '--span': 2 } as CSSProperties}>
+          <div className="tree-label" ref={g1}>Личный путь</div>
+          <Node ref={n1} icon={I.calc} title="Расчёт таланта" caption="бесплатно, на сайте · узнаёте роль" />
+          <Node ref={n2} icon={I.mentor} title="ИИ-ментор" caption="Telegram-бот · узнаёте персонажа" />
+        </div>
+        <div className="tree-group" style={{ '--from': 4, '--span': 2 } as CSSProperties}>
+          <div className="tree-label" ref={g2}>Идеи и команды</div>
+          <Node ref={n3} icon={I.idea} title="SoulMind" caption="игра для идей · индивидуально или командой" />
+          <Node ref={n4} icon={I.team} title="Dream Team" caption="программа для собственников и руководителей" />
+          <p className="beams-note">Мероприятия проходят в форматах SoulMind и Dream Team</p>
+        </div>
+        <div className="tree-group is-center" style={{ '--from': 1, '--span': 5 } as CSSProperties}>
+          <div className="tree-label" ref={g3}>Развитие экосистемы</div>
+          <Node ref={n5} icon={I.collab} title="Коллаборации с брендами" caption="украшения, ароматы, одежда и другие направления" status="Направление открыто для обсуждения" />
         </div>
       </div>
     </div>

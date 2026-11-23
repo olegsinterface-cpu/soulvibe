@@ -1,0 +1,114 @@
+/* «Карта талантов» на странице расчёта — в стиле схемы экосистемы */
+/* Сразу под блоками расчёта: у .calc снизу 80px, оставляем обычный интервал между блоками */
+.tmap-sec { margin-top: calc(var(--stack) - 80px); padding: 0 0 96px; }
+/* Название — небольшой серой подписью в левом верхнем углу */
+.tmap-title { position: absolute; top: 24px; left: 28px; z-index: 2; margin: 0; font-size: 14px; font-weight: 400; line-height: 1.3; letter-spacing: 0; color: var(--text-3); }
+
+.tmap {
+  position: relative; overflow: hidden;
+  display: grid; grid-template-columns: 320px minmax(0, 1fr); gap: 40px; align-items: center;
+  padding: 72px 40px 64px;
+  border-radius: var(--radius-lg);
+  background:
+    radial-gradient(40% 60% at 64% 50%, rgba(23, 135, 179, 0.16), transparent 70%),
+    radial-gradient(circle, rgba(255, 255, 255, 0.04) 1.1px, transparent 1.6px) 0 0 / 9px 9px,
+    var(--bg-2);
+}
+
+/* Плашка «Идея» — как подписи направлений в схеме экосистемы */
+.tmap-pill {
+  display: inline-block; padding: 10px 22px; border-radius: 999px;
+  font-size: 15px; font-weight: 500; color: var(--text);
+  background: #2b2f33;
+  box-shadow: 0 0 0 1px rgba(189, 255, 255, 0.28), 0 0 24px -4px rgba(23, 135, 179, 0.7);
+  white-space: nowrap;
+}
+
+/* Линии и импульсы */
+.tmap-line { fill: none; stroke: rgba(189, 255, 255, 0.13); stroke-width: 1.5; }
+.tmap-glow { filter: drop-shadow(0 0 3px rgba(23, 135, 179, 0.9)) drop-shadow(0 0 10px rgba(23, 135, 179, 0.35)); }
+.tmap-grid line { stroke: rgba(255, 255, 255, 0.05); stroke-width: 1; }
+/* Импульс — штрих с градиентом, положение задаётся каждый кадр в компоненте */
+.tmap-pulse { fill: none; stroke-width: 3; stroke-linecap: round; opacity: 0; filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.5)); }
+
+/* Путь идеи: волна с цветными кольцами */
+.tmap-path { display: flex; flex-direction: column; align-items: center; gap: 20px; }
+.tmap-wave { position: relative; width: 320px; }
+.tmap-wave svg { position: absolute; inset: 0; overflow: visible; }
+.tmap-steps { list-style: none; margin: 0; padding: 0; }
+.tmap-steps li {
+  position: absolute; transform: translateY(-50%);
+  font-size: 15px; line-height: 1.3; color: var(--text-2); white-space: nowrap;
+}
+.tmap-steps li.is-r { text-align: right; }
+
+/* Карта */
+.tmap-canvas { position: relative; width: 100%; max-width: 860px; margin: 0 auto; }
+.tmap-canvas svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+/* Сгустки энергии: ореол дышит, всполохи медленно вращаются, ядро мерцает */
+.tmap-orb-halo { transform-box: fill-box; transform-origin: center; animation: tmap-breathe 4.8s ease-in-out infinite; }
+.tmap-orb-rim { fill: none; stroke: currentColor; stroke-width: 1.4; stroke-opacity: 0.9; filter: drop-shadow(0 0 4px currentColor) drop-shadow(0 0 10px currentColor); }
+.tmap-swirl { transform-box: fill-box; transform-origin: center; animation: tmap-spin 9s linear infinite; mix-blend-mode: screen; }
+.tmap-swirl.is-rev { animation-duration: 13s; animation-direction: reverse; }
+.tmap-core { transform-box: fill-box; transform-origin: center; animation: tmap-core 3.2s ease-in-out infinite; filter: drop-shadow(0 0 6px currentColor); }
+@keyframes tmap-spin { to { transform: rotate(360deg); } }
+@keyframes tmap-breathe { 0%, 100% { transform: scale(0.9); opacity: 0.75; } 50% { transform: scale(1.08); opacity: 1; } }
+@keyframes tmap-core { 0%, 100% { transform: scale(0.85); opacity: 0.8; } 50% { transform: scale(1.1); opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .tmap-orb-halo, .tmap-swirl, .tmap-core { animation: none; } }
+
+/* Центр — только логотип со свечением, без круга */
+.tmap-hub { position: absolute; transform: translate(-50%, -50%); display: grid; place-items: center; }
+.tmap-hub-mark { width: 77px; height: 100px; overflow: hidden; display: block; filter: drop-shadow(0 0 18px rgba(23, 135, 179, 0.8)) drop-shadow(0 0 6px rgba(189, 255, 255, 0.4)); }
+.tmap-hub-mark img { height: 100px; width: auto; max-width: none; display: block; }
+.tmap-hub-pill { position: absolute; transform: translate(-50%, -50%); }
+.tmap-path .tmap-pill, .tmap-hub-pill { padding: 0; background: none; box-shadow: none; color: var(--accent); font-size: 17px; text-shadow: 0 0 14px rgba(23, 135, 179, 0.8); }
+
+/* Подписи узлов — тултипы, всегда открыты: плашка с уголком, указывающим на шар */
+.tmap-label {
+  position: absolute; z-index: 1;
+  display: flex; flex-direction: column; gap: 6px;
+  width: max-content; max-width: 240px;
+  padding: 12px 16px 14px;
+  border-radius: 14px;
+  background: #2b2f33;
+  box-shadow: 0 12px 32px -12px rgba(0, 0, 0, 0.6);
+}
+.tmap-label::after {
+  content: ''; position: absolute; width: 12px; height: 12px;
+  background: inherit; border-radius: 2px; transform: rotate(45deg);
+}
+.tmap-label.is-up::after { bottom: -5px; }
+.tmap-label.is-down::after { top: -5px; }
+.tmap-label.is-l::after { right: 20px; }
+.tmap-label.is-r::after { left: 20px; }
+.tmap-label b { display: flex; align-items: center; gap: 8px; font-size: 17px; font-weight: 500; letter-spacing: -0.01em; line-height: 1.2; color: var(--text); }
+.tmap-label b::before { content: ''; flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--c); box-shadow: 0 0 8px var(--c); }
+.tmap-label > span { display: flex; flex-direction: column; gap: 2px; font-size: 14px; line-height: 1.35; color: var(--text-2); }
+
+/* Узкий десктоп и планшет: путь сверху, карта под ним */
+@media (max-width: 1180px) {
+  .tmap { grid-template-columns: 1fr; gap: 48px; }
+}
+
+/* Телефон: карта без подписей, подписи — списком под ней */
+@media (max-width: 760px) {
+  .tmap-sec { padding-bottom: 64px; }
+  .tmap-title { top: 16px; left: 16px; font-size: 13px; }
+  .tmap { padding-top: 44px; }
+  .tmap { padding: 28px 16px; gap: 36px; }
+  .tmap-wave { transform: scale(0.94); transform-origin: top center; }
+  .tmap-hub-mark { width: 37px; height: 48px; }
+  .tmap-hub-mark img { height: 48px; }
+  .tmap-hub-pill { display: none; }
+  .tmap-canvas { display: grid; grid-template-columns: 1fr 1fr; gap: 20px 16px; aspect-ratio: auto !important; }
+  .tmap-canvas::before { content: ''; grid-column: 1 / -1; aspect-ratio: 860 / 600; }
+  .tmap-canvas svg { height: auto; aspect-ratio: 860 / 600; }
+  .tmap-hub { top: calc((100vw - 64px) * 300 / 860) !important; }
+  .tmap-label { position: static; width: auto; max-width: none; text-align: left !important; align-items: flex-start !important; }
+  .tmap-label::after { display: none; }
+  .tmap-label { padding: 0; background: none; box-shadow: none; }
+  .tmap-label > span { font-size: 13px; }
+  .tmap-label b { font-size: 16px; }
+}
+
+@media (prefers-reduced-motion: reduce) { .tmap-pulse { display: none; } }

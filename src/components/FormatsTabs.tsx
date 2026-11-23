@@ -1,7 +1,8 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
-import { Link, useLocation } from '../router'
+import { Link, asset, useLocation } from '../router'
 import { DIALOG, FORMATS, LINKS, type FormatId } from '../content'
 import { Arrow } from './Icons'
+import { SolarIcon } from './ui/SolarIcon'
 import './formats-tabs.css'
 
 /* Облегчённый вариант секции «Форматы работы»:
@@ -103,7 +104,16 @@ export default function FormatsTabs() {
               <>
                 <span className="ft-visual-label">Пример диалога · демонстрация</span>
                 <div className="ft-chat">
-                  {DIALOG.slice(0, 3).map((m, i) => <p key={i} className={`ft-bubble ${m.from}`}>{m.text}</p>)}
+                  {DIALOG.slice(0, 3).map((m, i) => (
+                    <div key={i} className={`ft-msg ${m.from}`}>
+                      <span className="ft-avatar" aria-hidden="true">
+                        {m.from === 'user'
+                          ? <SolarIcon name="user" size={18} />
+                          : <span className="ft-avatar-mark"><img src={asset('/logo.svg')} alt="" /></span>}
+                      </span>
+                      <p className={`ft-bubble ${m.from}`}>{m.text}</p>
+                    </div>
+                  ))}
                 </div>
               </>
             ) : (

@@ -1143,3 +1143,16 @@ button, input { font: inherit; color: inherit; }
   .btn-wow::before, .btn-wow::after, .btn-wow .btn-primary::after { animation: none; }
   .btn-wow .btn-primary::after { opacity: 0; }
 }
+
+/* Стрелка в переходах под схемой: раз в пару секунд коротко «толкается» вправо */
+.jump .go svg { animation: go-nudge 3.2s ease-in-out infinite; }
+.jump:nth-child(2) .go svg { animation-delay: .3s; }
+.jump:nth-child(3) .go svg { animation-delay: .6s; }
+@keyframes go-nudge {
+  0%, 50%, 100% { transform: translateX(0); }
+  63% { transform: translateX(5px); }
+  76% { transform: translateX(0); }
+  85% { transform: translateX(3px); }
+  94% { transform: translateX(0); }
+}
+@media (prefers-reduced-motion: reduce) { .jump .go svg { animation: none; } }

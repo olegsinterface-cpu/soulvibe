@@ -87,29 +87,24 @@
   pointer-events: none;
 }
 
-/* Фрагмент отзыва — как выделенный текст: серая подложка по каждой строке, курсоры выделения по краям */
-.cc-quote { margin: 28px 0 0; }
-.cc-quote blockquote { margin: 0; font-size: 19px; line-height: 1.6; letter-spacing: -0.01em; color: var(--text); }
-.cc-hl {
-  padding: 8px 12px; /* подложки соседних строк заходят друг на друга — щелей нет */
-  border-radius: 16px;
-  background: #383c3f; /* непрозрачный: на перекрытии строк не темнеет */
-  color: inherit;
-  -webkit-box-decoration-break: clone; box-decoration-break: clone; /* скругление и отступы у каждой строки */
+/* Отзыв клиента: карточка-комментарий — аватар, имя, подпись и текст */
+.cc-quote {
+  position: relative; margin: 28px 0 0; padding: 22px 24px 24px;
+  border-radius: 20px; background: rgba(255, 255, 255, 0.04);
 }
-.cc-caret {
-  position: relative; display: inline-block;
-  width: 2px; height: 1.35em; margin: 0 2px;
-  vertical-align: -0.3em;
-  background: rgba(255, 255, 255, 0.85);
+.cc-quote::before { /* крупная кавычка — декоративно, в углу */
+  content: '\201D'; position: absolute; top: 6px; right: 22px;
+  font-size: 72px; line-height: 1; color: var(--accent); opacity: 0.18; pointer-events: none;
 }
-.cc-caret::before {
-  content: ''; position: absolute; left: 50%; width: 8px; height: 8px; margin-left: -4px;
-  border-radius: 50%; background: inherit;
+.cc-quote-author { display: flex; align-items: center; gap: 12px; }
+.cc-quote-avatar {
+  flex: none; width: 44px; height: 44px; border-radius: 50%;
+  display: grid; place-items: center; background: #3a3e42; color: rgba(255, 255, 255, 0.8);
 }
-.cc-caret.is-start::before { top: -6px; }
-.cc-caret.is-end::before { bottom: -6px; }
-.cc-quote figcaption { margin-top: 16px; font-size: 14px; color: var(--text-3); }
+.cc-quote-who { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.cc-quote-who b { font-size: 16px; line-height: 20px; font-weight: 600; }
+.cc-quote-who small { font-size: 14px; line-height: 18px; color: var(--text-3); }
+.cc-quote blockquote { margin: 16px 0 0; font-size: 18px; line-height: 1.6; letter-spacing: -0.01em; color: var(--text); }
 
 .cc-cta { margin-top: auto; align-self: flex-end; } /* кнопка — по правому краю карточки */
 .cc-card > :nth-last-child(2) { margin-bottom: 28px; } /* отступ до кнопки, кнопка прижата к низу */
@@ -150,6 +145,7 @@
   .cc-rows > div { padding: 14px 0; gap: 4px; }
   .cc-rows > div + div { border-left: 0; border-top: 1px solid rgba(255, 255, 255, 0.07); }
   .cc-rows dd { font-size: 15px; }
+  .cc-quote { padding: 18px 18px 20px; }
   .cc-quote blockquote { font-size: 16px; }
   .cc-cta { width: 100%; justify-content: center; }
   .cc-card { padding: 24px 20px; }
