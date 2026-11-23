@@ -1,4 +1,4 @@
-import { Link } from '../router'
+import { Link, asset } from '../router'
 import { LINKS, NAV } from '../content'
 
 export default function Footer() {
@@ -7,7 +7,7 @@ export default function Footer() {
       <div className="wrap">
         <div className="footer-grid">
           <div>
-            <Link to="/" className="logo"><img src="/logo.svg" alt="SoulVibe" className="logo-img" /></Link>
+            <Link to="/" className="logo"><img src={asset('/logo.svg')} alt="SoulVibe" className="logo-img" /></Link>
             <p>Экосистема раскрытия талантов и командного взаимодействия. В основе всех форматов — общая методология и игровая философия.</p>
           </div>
           <div>

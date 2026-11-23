@@ -1,11 +1,23 @@
 import { useEffect, useState, type AnchorHTMLAttributes, type MouseEvent } from 'react'
 
+/* Подпуть сайта: локально пусто, на GitHub Pages — «/<репозиторий>».
+   Внутри приложения адреса пишем от корня («/raschet»), подпуть добавляется здесь. */
+export const BASE = import.meta.env.BASE_URL.replace(/\/$/, '')
+
+/** Адрес файла из public с учётом подпути: asset('/logo.svg') */
+export const asset = (p: string) => BASE + p
+
+/** Внутренний адрес → настоящий адрес в браузере */
+export const withBase = (to: string) => (to.startsWith('/') ? BASE + to : to)
+
 function current() {
-  return { path: window.location.pathname, hash: window.location.hash.slice(1), search: window.location.search }
+  const p = window.location.pathname
+  const path = BASE && p.startsWith(BASE) ? p.slice(BASE.length) || '/' : p
+  return { path, hash: window.location.hash.slice(1), search: window.location.search }
 }
 
 export function navigate(to: string) {
-  const url = new URL(to, window.location.origin)
+  const url = new URL(withBase(to), window.location.origin)
   const samePage = url.pathname === window.location.pathname
   window.history.pushState({}, '', url.pathname + url.search + url.hash)
   window.dispatchEvent(new Event('sv:navigate'))
@@ -43,5 +55,5 @@ export function Link({ to, onClick, ...rest }: LinkProps) {
     e.preventDefault()
     navigate(to)
   }
-  return <a href={to} onClick={handle} {...rest} />
+  return <a href={withBase(to)} onClick={handle} {...rest} />
 }

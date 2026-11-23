@@ -1,5 +1,5 @@
 import type { CSSProperties } from 'react'
-import { Link } from '../router'
+import { Link, asset } from '../router'
 import { ROLE_FAN } from '../content'
 import { Arrow } from './Icons'
 import { TiltCard } from './ui/TiltCard'
@@ -28,7 +28,7 @@ export default function RoleFan() {
               return (
                 <TiltCard as="figure" className="fan-card is-main" key={pos} style={slot(pos)}>
                   <div className="fan-photo">
-                    <img src="/characters/queen.jpg" alt="Персонаж Королева: девушка в голубом платье на белом троне среди облаков" width="753" height="1000" />
+                    <img src={asset('/characters/queen.jpg')} alt="Персонаж Королева: девушка в голубом платье на белом троне среди облаков" width="753" height="1000" />
                     <figcaption>Королева</figcaption>
                     <div className="fan-talent">
                       <b>{ROLE_FAN.role}</b>
@@ -38,7 +38,7 @@ export default function RoleFan() {
                 </TiltCard>
               )
             }
-            const src = `/characters/hidden-${++hidden}.jpg`
+            const src = asset(`/characters/hidden-${++hidden}.jpg`)
             return (
               <div className={`fan-card is-hidden${Math.abs(pos) === 2 ? ' is-far' : ''}`} key={pos} style={slot(pos)} aria-hidden="true">
                 <div className="fan-photo"><img src={src} alt="" /></div>

@@ -108,7 +108,7 @@ export default function Calc() {
           {/* фон — те же волны из точек, что в hero */}
           <HeroDots className="in-calc" />
           <Link to="/" className="back-link"><span style={{ transform: 'rotate(180deg)', display: 'inline-flex' }}><Arrow size={14} /></span>На главную</Link>
-          <span className="status-pill calc-free">Бесплатно</span>
+          <span className="calc-free">Бесплатно</span>
           <h1>Расчёт таланта</h1>
           <p className="lead">На сайте вы получите свою роль и её описание. Персонажа можно узнать в боте с ИИ-ментором.</p>
           <div className="calc-steps">
@@ -142,12 +142,12 @@ export default function Calc() {
                 <input
                   id="birth" name="birth" className="input" inputMode="numeric" autoComplete="bday"
                   placeholder="ДД.ММ.ГГГГ" value={v.birth} disabled={busy}
-                  aria-invalid={!!errors.birth} aria-describedby={errors.birth ? 'birth-err' : 'birth-help'}
+                  aria-invalid={!!errors.birth} aria-describedby={errors.birth ? 'birth-err' : undefined}
                   onChange={(e) => set('birth', maskDate(e.target.value))}
                 />
                 <label htmlFor="birth">Дата рождения<em>*</em></label>
               </div>
-              {errors.birth ? <p className="err" id="birth-err">{errors.birth}</p> : <p className="help" id="birth-help">Например, 14.03.1990</p>}
+              {errors.birth && <p className="err" id="birth-err">{errors.birth}</p>}
             </div>
             <div className="field">
               <div className="float">
@@ -166,17 +166,28 @@ export default function Calc() {
                 <input
                   id="tg" name="tg" className="input" autoComplete="off" autoCapitalize="none"
                   placeholder="@username" value={v.tg} disabled={busy}
-                  aria-invalid={!!errors.tg} aria-describedby={errors.tg ? 'tg-err' : 'tg-help'}
+                  aria-invalid={!!errors.tg} aria-describedby={errors.tg ? 'tg-err' : undefined}
                   onChange={(e) => set('tg', e.target.value.trim())}
                 />
                 <label htmlFor="tg">Telegram<em>*</em></label>
               </div>
-              {errors.tg ? <p className="err" id="tg-err">{errors.tg}</p> : <p className="help" id="tg-help">Формат: @username — имя пользователя из настроек Telegram</p>}
+              {errors.tg && <p className="err" id="tg-err">{errors.tg}</p>}
             </div>
 
+            {/* Пояснение — тултипом при наведении или фокусе (на телефоне — по нажатию) */}
             <div className="why">
-              Зачем нужны контакты: мы сохраняем email и Telegram вместе с результатом расчёта и можем написать вам о форматах SoulVibe. Подробнее — в документе об обработке персональных данных.
-              {/* TODO: формулировка по фактической обработке данных — согласовать с юристом */}
+              <button type="button" className="why-trigger" aria-describedby="why-tip">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.6" />
+                  <path d="M12 11v5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+                  <circle cx="12" cy="8" r="1" fill="currentColor" />
+                </svg>
+                Зачем нужны контакты?
+              </button>
+              <span className="why-tip" id="why-tip" role="tooltip">
+                Мы сохраняем email и Telegram вместе с результатом расчёта и можем написать вам о форматах SoulVibe. Подробнее — в документе об обработке персональных данных.
+                {/* TODO: формулировка по фактической обработке данных — согласовать с юристом */}
+              </span>
             </div>
 
             <div className="field">
@@ -198,7 +209,7 @@ export default function Calc() {
               {busy ? (
                 <span className="loading-note" role="status"><span className="bar" />Обычно это занимает несколько секунд</span>
               ) : (
-                <Link to="/primer" className="text-link">Посмотреть пример результата</Link>
+                <Link to="/primer" className="btn btn-ghost">Посмотреть пример результата</Link>
               )}
             </div>
           </form>

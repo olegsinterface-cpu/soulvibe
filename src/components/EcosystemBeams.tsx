@@ -1,4 +1,5 @@
 import { forwardRef, useEffect, useLayoutEffect, useRef, useState, type ReactNode, type RefObject } from 'react'
+import { asset } from '../router'
 import './ecosystem-beams.css'
 import { SolarIcon } from './ui/SolarIcon'
 import { SHINE } from './ui/shine'
@@ -215,7 +216,7 @@ export default function EcosystemBeams() {
         <div className="beams-hub-wrap">
           <div className="beams-hub" ref={hub}>
             <span className="beams-hub-ring" aria-hidden="true" />
-            <span className="beams-hub-mark" aria-hidden="true"><img src="/logo.svg" alt="" /></span>
+            <span className="beams-hub-mark" aria-hidden="true"><img src={asset('/logo.svg')} alt="" /></span>
           </div>
           <div className="beams-hub-text">
             <span className="mono">Общая основа</span>

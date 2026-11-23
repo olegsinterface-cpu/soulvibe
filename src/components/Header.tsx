@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link } from '../router'
+import { Link, asset } from '../router'
 import { NAV } from '../content'
 import { ShinyButton } from './ui/ShinyButton'
 
@@ -21,7 +21,7 @@ export default function Header() {
       <div className="wrap">
         <div className="header-in">
           <Link to="/" className="logo" onClick={close} aria-label="SoulVibe — на главную">
-            <img src="/logo.svg" alt="SoulVibe" className="logo-img" />
+            <img src={asset('/logo.svg')} alt="SoulVibe" className="logo-img" />
           </Link>
           <nav className="nav" aria-label="Разделы">
             {NAV.map((n) => (

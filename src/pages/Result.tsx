@@ -1,6 +1,8 @@
 import { Link } from '../router'
 import { LINKS, RESULT_MANAGER as R } from '../content'
-import { Arrow, Emblem } from '../components/Icons'
+import { Arrow } from '../components/Icons'
+import { TiltCard } from '../components/ui/TiltCard'
+import { SolarIcon } from '../components/ui/SolarIcon'
 
 export default function Result({ demo = false }: { demo?: boolean }) {
   return (
@@ -17,31 +19,29 @@ export default function Result({ demo = false }: { demo?: boolean }) {
           </div>
         )}
 
-        <div className="result-hero curtain">
-          <div>
-            <span className="mono">{demo ? 'Пример роли' : 'Ваша роль'}</span>
-            <h1>{R.role}</h1>
-            <p className="talent"><b>Талант:</b> {R.talent}</p>
-          </div>
-          <div className="emblem-wrap"><Emblem className="emblem" /></div>
-        </div>
-
-        <div className="result-grid">
-          <div className="rcard">
-            <span className="mono">Сильные стороны</span>
-            <h2>На что можно опираться</h2>
-            <ul>
-              {R.strengths.map((s, i) => (
-                <li key={s}><span>0{i + 1}</span>{s}</li>
+        {/* Слева карточка персонажа (сверху изображение, снизу описание роли), справа — «Что дальше» */}
+        <div className="res-layout">
+        <TiltCard className="res-card">
+          <figure className="res-photo">
+            <img src={R.character.img} alt={R.character.alt} width="753" height="1000" />
+            <figcaption>{R.character.name}</figcaption>
+          </figure>
+          <div className="res-info">
+            <div className="res-head">
+              <span className="res-kicker">{demo ? 'Пример роли' : 'Ваша роль'}</span>
+              <h1><span className="gt">{R.role}</span></h1>
+            </div>
+            {/* Таблица: «Талант» — строкой на всю ширину, ниже две колонки */}
+            <dl className="res-list">
+              {R.items.map((it, i) => (
+                <div key={it.k} className={i === 0 ? 'res-item is-main' : 'res-item'}>
+                  <dt><SolarIcon name={it.ico} size={16} className="res-ico" />{it.k}</dt>
+                  <dd>{it.v}</dd>
+                </div>
               ))}
-            </ul>
+            </dl>
           </div>
-          <div className="rcard">
-            <span className="mono">Вклад в команду</span>
-            <h2>Что роль даёт совместной работе</h2>
-            <p>{R.contribution}</p>
-          </div>
-        </div>
+        </TiltCard>
 
         <div className="next">
           <div>
@@ -58,6 +58,7 @@ export default function Result({ demo = false }: { demo?: boolean }) {
             </div>
             {demo && <Link to="/raschet" className="text-link" style={{ alignSelf: 'flex-start', marginTop: 8 }}>Рассчитать свою роль <Arrow size={14} /></Link>}
           </div>
+        </div>
         </div>
       </div>
     </section>
