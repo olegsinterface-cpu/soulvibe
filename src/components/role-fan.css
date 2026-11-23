@@ -86,4 +86,14 @@
 }
 /* Наклон за курсором у Королевы — вращение вокруг центра карточки */
 .fan-card.is-main.tilt { transform-origin: 50% 50%; }
+/* Боковые карточки тоже наклоняются за курсором: рамка и фон переезжают на внутренний блок,
+   чтобы наклон не сбивал положение карточки в веере */
+.fan-card.is-hidden { padding: 0; border: 0; background: none; perspective: 1200px; /* объём для наклона внутреннего блока */ }
+.fan-tilt {
+  width: 100%; height: 100%; padding: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 28px;
+  background: rgba(29, 31, 33, 0.6);
+  transform-origin: 50% 50%;
+}
+@media (max-width: 560px) { .fan-tilt { border-radius: 22px; } }
 .fan { perspective: 1500px; }

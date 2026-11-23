@@ -25,7 +25,7 @@ function SecHead({ label, title, sub }: { n?: string; label: string; title: Reac
 function Hero() {
   return (
     <section className="hero" id="top">
-      <HeroDots />
+      <HeroDots accent />
       <div className="wrap hero-center">
         <div className="hero-text">
           <h1>
@@ -35,9 +35,11 @@ function Hero() {
           </h1>
           <p className="hero-lead">{HERO.lead}</p>
           <div className="hero-actions">
-            <Link to="/#ecosystem" className="btn btn-primary">
-              Исследовать экосистему <ArrowDown />
-            </Link>
+            <span className="btn-wow">
+              <Link to="/#ecosystem" className="btn btn-primary">
+                Исследовать экосистему <ArrowDown />
+              </Link>
+            </span>
             <Link to="/#contacts" className="btn btn-ghost">Обсудить задачу</Link>
           </div>
           <div className="hero-terms">

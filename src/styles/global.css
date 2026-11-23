@@ -323,13 +323,19 @@ button, input { font: inherit; color: inherit; }
 .hero-terms {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
   margin-top: 56px;
-  border-top: 1px solid var(--line);
 }
-.hero-terms > div { padding: 16px 16px 0 0; }
-.hero-terms > div + div { padding-left: 16px; border-left: 1px solid var(--line); }
-.hero-terms b { display: block; font-weight: 500; font-size: 15px; margin-bottom: 2px; }
-.hero-terms p { font-size: 13px; color: var(--text-3); line-height: 1.45; }
+/* Термины — карточки: приглушённо-серый фон без рамок, лёгкое размытие поверх волн */
+.hero-terms > div {
+  padding: 20px 22px 22px;
+  border-radius: var(--radius);
+  background: rgba(34, 37, 39, 0.72);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+}
+.hero-terms b { display: block; font-weight: 500; font-size: 18px; line-height: 1.3; margin-bottom: 6px; }
+.hero-terms p { font-size: 15px; color: var(--text-2); line-height: 1.45; }
 
 .hero-visual {
   min-height: 640px;
@@ -394,8 +400,9 @@ button, input { font: inherit; color: inherit; }
 }
 @media (max-width: 560px) {
   .hero-terms { grid-template-columns: 1fr; }
-  .hero-terms > div, .hero-terms > div + div { padding: 12px 0; border-left: 0; border-bottom: 1px solid var(--line); display: flex; gap: 10px; align-items: baseline; }
-  .hero-terms b { margin: 0; min-width: 84px; }
+  .hero-terms { gap: 8px; margin-top: 40px; }
+  .hero-terms > div { padding: 16px 18px; }
+  .hero-terms b { font-size: 17px; margin-bottom: 4px; }
   .hero-actions .btn { flex: 1 1 100%; }
   .orb-tag i { width: 18px; }
   .orb-tag { font-size: 10px; }
@@ -438,7 +445,7 @@ button, input { font: inherit; color: inherit; }
   border-radius: var(--radius-lg);
   padding: 48px 40px 40px;
   background:
-    radial-gradient(circle, rgba(255, 255, 255, 0.07) 1.1px, transparent 1.6px) 0 0 / 9px 9px, /* сетка точек — как частицы в hero, без анимации */
+    radial-gradient(circle, rgba(255, 255, 255, 0.04) 1.1px, transparent 1.6px) 0 0 / 9px 9px, /* сетка точек — как частицы в hero, без анимации */
     var(--bg-2);
   overflow: hidden;
 }
@@ -640,7 +647,14 @@ button, input { font: inherit; color: inherit; }
 .pa-top-ico { flex: none; color: rgba(255, 255, 255, 0.4); }
 .pa-panel h4 { font-size: 24px; font-weight: 500; letter-spacing: -0.02em; color: var(--text); }
 .pa-panel p { margin-top: 0; max-width: 300px; font-size: 15px; line-height: 1.5; color: rgba(255, 255, 255, 0.82); }
-.pa-glow { position: absolute; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
+/* Safari не обрезает по скруглённым углам слой с анимированным размытием (filter + animation),
+   поэтому сияние дополнительно обрезаем маской со скруглением */
+.pa-glow {
+  position: absolute; inset: 0; z-index: 0; overflow: hidden; pointer-events: none;
+  border-radius: inherit;
+  clip-path: inset(0 round var(--radius-lg));
+  -webkit-mask-image: -webkit-radial-gradient(white, black);
+}
 /* «Северное сияние»: размытые пятна медленно перетекают */
 .pa-glow::before {
   content: ''; position: absolute; inset: -25%; z-index: -2;
@@ -687,7 +701,7 @@ button, input { font: inherit; color: inherit; }
   padding: 40px;
   display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr); gap: 32px; align-items: end;
   background:
-    radial-gradient(circle, rgba(255, 255, 255, 0.07) 1.1px, transparent 1.6px) 0 0 / 9px 9px, /* частицы, как в hero; без градиента */
+    radial-gradient(circle, rgba(255, 255, 255, 0.04) 1.1px, transparent 1.6px) 0 0 / 9px 9px, /* частицы, как в hero; без градиента */
     var(--bg-2);
   border: 1px solid var(--line);
   overflow: hidden;
@@ -735,6 +749,9 @@ button, input { font: inherit; color: inherit; }
 /* Заглушка фото — мягкий свет в цветах палитры и зерно, чтобы место под фото не выглядело пустой серой плашкой */
 .author-photo {
   position: relative; overflow: hidden; isolation: isolate;
+  /* ширина — по колонке, высота — из пропорции. align-self: start нужен Safari:
+     иначе он тянет фото по высоте соседней колонки и сужает его по пропорции */
+  width: 100%; align-self: start;
   aspect-ratio: 4 / 5;
   display: flex; align-items: flex-end; padding: 28px;
   border-radius: var(--radius-lg);
@@ -1092,5 +1109,37 @@ button, input { font: inherit; color: inherit; }
 .jump:hover { border: 0; background: rgba(189, 255, 255, 0.06); }
 
 /* Внутренние разделители — тише */
-.mt-row + .mt-row, .mt-row > div + div,
-.hero-terms, .hero-terms > div + div { border-color: rgba(255, 255, 255, 0.06); }
+.mt-row + .mt-row, .mt-row > div + div { border-color: rgba(255, 255, 255, 0.06); }
+
+/* ============ Главная кнопка hero «Исследовать экосистему» — привлекает внимание ============
+   По краю бежит световая дуга в акцентных цветах (#1787B3 → #BDFFFF), под ней мягкий ореол,
+   по белой поверхности раз в несколько секунд проходит голубой блик. */
+@property --wow-a { syntax: '<angle>'; inherits: false; initial-value: 0deg; }
+.btn-wow {
+  position: relative; display: inline-flex; isolation: isolate;
+  padding: 2px; border-radius: 18px;
+}
+.btn-wow::before, .btn-wow::after {
+  content: ''; position: absolute; inset: 0; z-index: -1; border-radius: inherit; pointer-events: none;
+  background: conic-gradient(from var(--wow-a), transparent 0% 48%, rgba(23, 135, 179, 0.9) 66%, #BDFFFF 82%, #fff 86%, transparent 94%);
+  animation: wow-spin 3.6s linear infinite;
+}
+/* ореол — та же дуга, размытая; дышит */
+.btn-wow::after { inset: -6px; filter: blur(14px); opacity: 0.55; animation: wow-spin 3.6s linear infinite, wow-breathe 3.6s ease-in-out infinite; }
+.btn-wow .btn { flex: 1; }
+.btn-wow .btn-primary { --btn-shine: rgba(189, 255, 255, 1); box-shadow: 0 8px 32px -8px rgba(189, 255, 255, 0.45); }
+/* блик проходит сам, без наведения */
+.btn-wow .btn-primary::after { opacity: 1; width: 40%; animation: wow-sweep 4.2s cubic-bezier(.22, 1, .36, 1) infinite; }
+.btn-wow:hover::after { opacity: 0.9; }
+.btn-wow:hover .btn-primary { box-shadow: 0 12px 44px -8px rgba(189, 255, 255, 0.7); }
+@keyframes wow-spin { to { --wow-a: 360deg; } }
+@keyframes wow-breathe { 0%, 100% { opacity: 0.4; } 50% { opacity: 0.75; } }
+@keyframes wow-sweep {
+  0%, 55% { transform: translateX(0) skewX(-12deg); }
+  85%, 100% { transform: translateX(420%) skewX(-12deg); }
+}
+@media (max-width: 560px) { .hero-actions .btn-wow { flex: 1 1 100%; } }
+@media (prefers-reduced-motion: reduce) {
+  .btn-wow::before, .btn-wow::after, .btn-wow .btn-primary::after { animation: none; }
+  .btn-wow .btn-primary::after { opacity: 0; }
+}

@@ -1,6 +1,6 @@
 /* Наклон карточки за курсором */
+/* Без transform-style: preserve-3d — в Safari он отключает обрезку по скруглённым углам (overflow: hidden) */
 .tilt {
-  transform-style: preserve-3d;
   will-change: transform;
   /* возврат на место — плавно и медленнее, чем само движение */
   transition: transform .6s cubic-bezier(.22, 1, .36, 1), box-shadow .6s ease;

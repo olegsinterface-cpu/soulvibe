@@ -40,8 +40,11 @@ export default function RoleFan() {
             }
             const src = asset(`/characters/hidden-${++hidden}.jpg`)
             return (
+              // внешний блок держит место в веере (сдвиг и поворот), внутренний — наклоняется за курсором
               <div className={`fan-card is-hidden${Math.abs(pos) === 2 ? ' is-far' : ''}`} key={pos} style={slot(pos)} aria-hidden="true">
-                <div className="fan-photo"><img src={src} alt="" /></div>
+                <TiltCard className="fan-tilt">
+                  <div className="fan-photo"><img src={src} alt="" /></div>
+                </TiltCard>
               </div>
             )
           })}

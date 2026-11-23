@@ -6,7 +6,7 @@ import './hero-dots.css'
    две системы гребней (направление первой медленно поворачивается); кольца ряби от двух плывущих
    источников; по гребням пробегают блики, отдельные точки тихо мерцают. От высоты зависят размер,
    яркость и цвет точки. Цвета — серо-белые с лёгким
-   уходом в палитру (#BDFFFF / #1787B3), всё приглушено. На мышь не реагирует.
+   уходом в палитру, либо (accent) полностью в акцентных #1787B3 → #BDFFFF; всё приглушено. На мышь не реагирует.
    Пауза вне экрана и в свёрнутой вкладке; при «уменьшении движения» — один статичный кадр. */
 
 const VERT = `
@@ -19,6 +19,7 @@ precision mediump float;
 uniform vec2 uRes;
 uniform float uTime;
 uniform float uCell;
+uniform float uAccent; // 1 — точки в акцентных цветах, 0 — прежние серо-белые
 
 // value noise + fbm
 float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
@@ -88,18 +89,22 @@ void main() {
   // цвет: серый во впадинах → серо-голубой (#1787B3) на склонах → голубой-белый (#BDFFFF) на гребнях и бликах
   vec3 deep = vec3(0.09, 0.53, 0.70);
   vec3 cyan = vec3(0.74, 1.0, 1.0);
-  vec3 col = mix(vec3(0.42), deep, smoothstep(0.15, 0.55, e) * 0.6);
-  col = mix(col, mix(cyan, vec3(1.0), 0.45), smoothstep(0.6, 1.0, e));
+  vec3 grey = mix(vec3(0.42), deep, smoothstep(0.15, 0.55, e) * 0.6);
+  grey = mix(grey, mix(cyan, vec3(1.0), 0.45), smoothstep(0.6, 1.0, e));
+  // акцентный вариант: впадины — #1787B3, к гребням переходит в #BDFFFF, белого нет
+  vec3 acc = mix(deep, cyan, smoothstep(0.25, 0.75, e));
+  vec3 col = mix(grey, acc, uAccent);
 
   float v2 = e;
   // общая приглушённость: максимум яркости невысокий
-  float alpha = dotMask * mix(0.02, 0.2, v2 * v2); // сильно приглушено, чтобы не мешать тексту
+  float alpha = dotMask * mix(0.02 + 0.04 * uAccent, 0.2 + 0.7 * uAccent, mix(v2 * v2, v2, uAccent * 0.5)); // сильно приглушено, чтобы не мешать тексту
   gl_FragColor = vec4(col * alpha, alpha);
 }
 `
 
 /** className — дополнительный класс для другой маски (например, в блоке расчёта) */
-export default function HeroDots({ className = '' }: { className?: string }) {
+/** accent — точки в акцентных цветах (#1787B3 → #BDFFFF) вместо серо-белых */
+export default function HeroDots({ className = '', accent = false }: { className?: string; accent?: boolean }) {
   const ref = useRef<HTMLCanvasElement>(null)
 
   useEffect(() => {
@@ -130,6 +135,7 @@ export default function HeroDots({ className = '' }: { className?: string }) {
     const uRes = gl.getUniformLocation(prog, 'uRes')
     const uTime = gl.getUniformLocation(prog, 'uTime')
     const uCell = gl.getUniformLocation(prog, 'uCell')
+    gl.uniform1f(gl.getUniformLocation(prog, 'uAccent'), accent ? 1 : 0)
 
     let dpr = 1
     const resize = () => {
@@ -167,7 +173,7 @@ export default function HeroDots({ className = '' }: { className?: string }) {
       document.removeEventListener('visibilitychange', onVis)
       // контекст не сбрасываем: в режиме разработки эффект запускается дважды на том же canvas
     }
-  }, [])
+  }, [accent])
 
   return <canvas ref={ref} className={`hero-dots ${className}`.trim()} aria-hidden="true" />
 }
