@@ -48,6 +48,23 @@ export default function CasesCarousel({ items }: { items: CaseCard[] }) {
     if (Math.abs(dx) > 48 && Math.abs(dx) > Math.abs(e.clientY - d.y)) (dx < 0 ? next : prev)()
   }
 
+  // Появление: активная карточка поднимается снизу, затем из-за неё в стороны выходят соседние
+  // и встают на места. Если карусель снова ушла вниз за экран — появление повторится.
+  // При уходе вверх соседние вслед за прокруткой прячутся обратно за центральную (--ex из useScrollParts секции).
+  const stageRef = useRef<HTMLDivElement>(null)
+  const [shown, setShown] = useState(false)
+  useEffect(() => {
+    const el = stageRef.current
+    if (!el) return
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) { setShown(true); return }
+    const io = new IntersectionObserver(([e]) => {
+      if (e.isIntersecting) setShown(true)
+      else if (e.boundingClientRect.top > window.innerHeight) setShown(false)
+    }, { threshold: 0.2 })
+    io.observe(el)
+    return () => io.disconnect()
+  }, [])
+
   // Положение карточки относительно активной: 0 — центр, -1 — слева, 1 — справа
   const offset = (i: number) => {
     let o = i - active
@@ -58,7 +75,7 @@ export default function CasesCarousel({ items }: { items: CaseCard[] }) {
 
   return (
     <div
-      className="cc"
+      className={`cc cc-reveal${shown ? ' is-in' : ''}`}
       role="region"
       aria-roledescription="карусель"
       aria-label="Примеры"
@@ -67,7 +84,7 @@ export default function CasesCarousel({ items }: { items: CaseCard[] }) {
       {/* Якоря для ссылок /#case-…: прокрутка к карусели */}
       {items.map((c) => <span key={c.id} id={c.id} className="cc-anchor" aria-hidden="true" />)}
 
-      <div className="cc-stage" onPointerDown={onDown} onPointerUp={onUp} onPointerCancel={() => { drag.current = null }}>
+      <div className="cc-stage" ref={stageRef} data-sp data-sp-x="-0.12" data-sp-len="0.32" onPointerDown={onDown} onPointerUp={onUp} onPointerCancel={() => { drag.current = null }}>
         {/* Стрелки поверх боковых карточек */}
         <button type="button" className="cc-arrow is-prev" onClick={prev} aria-label="Предыдущий пример"><Chevron /></button>
         <button type="button" className="cc-arrow is-next" onClick={next} aria-label="Следующий пример"><Chevron /></button>

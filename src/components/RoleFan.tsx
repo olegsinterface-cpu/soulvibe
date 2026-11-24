@@ -1,8 +1,9 @@
-import type { CSSProperties } from 'react'
+import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import { Link, asset } from '../router'
 import { ROLE_FAN } from '../content'
 import { Arrow } from './Icons'
 import { TiltCard } from './ui/TiltCard'
+import { letters, useScrollParts } from './ui/letters'
 import './role-fan.css'
 
 /* Альтернативный вариант секции «Роль и персонаж»:
@@ -14,15 +15,35 @@ const SLOTS = [-2, -1, 0, 1, 2] as const
 // --k — сдвиг и наклон по знаку, --a — удалённость от центра (уменьшение, опускание, слой)
 const slot = (pos: number) => ({ '--k': pos, '--a': Math.abs(pos), zIndex: 3 - Math.abs(pos) }) as CSSProperties
 
+const count = (t: string) => t.replace(/\s/g, '').length
+
 export default function RoleFan() {
   let hidden = 0
+  const ref = useRef<HTMLElement>(null)
+  const fan = useRef<HTMLDivElement>(null)
+  useScrollParts(ref)
+  // Появление веера: главная карточка поднимается снизу, затем из-за неё в стороны
+  // разлетаются остальные и встают на места. Если веер снова ушёл вниз за экран — появление повторится.
+  // При уходе вверх карточки вслед за прокруткой собираются обратно за центральную (--ex из useScrollParts).
+  const [shown, setShown] = useState(false)
+  useEffect(() => {
+    const el = fan.current
+    if (!el) return
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) { setShown(true); return }
+    const io = new IntersectionObserver(([e]) => {
+      if (e.isIntersecting) setShown(true)
+      else if (e.boundingClientRect.top > window.innerHeight) setShown(false)
+    }, { threshold: 0.25 })
+    io.observe(el)
+    return () => io.disconnect()
+  }, [])
   return (
-    <section className="section role-fan" id="role">
+    <section className="section role-fan" id="role" ref={ref}>
       <div className="role-fan-bg" aria-hidden="true" />
       <div className="wrap role-fan-inner">
         <span className="sec-label mono">Роль и персонаж</span>
 
-        <div className="fan">
+        <div className={`fan fan-reveal${shown ? ' is-in' : ''}`} ref={fan} data-sp data-sp-x="-0.12" data-sp-len="0.32">
           {SLOTS.map((pos) => {
             if (pos === 0) {
               return (
@@ -50,8 +71,13 @@ export default function RoleFan() {
           })}
         </div>
 
-        <h2>{ROLE_FAN.title}</h2>
-        <p className="fan-lead">{ROLE_FAN.lead}</p>
+        {/* Текст по буквам — как в других секциях: входит снизу и уходит при прокрутке дальше */}
+        <h2 className="sl" data-sp aria-label={ROLE_FAN.title} style={{ ['--n' as string]: count(ROLE_FAN.title) }}>
+          <span aria-hidden="true">{letters(ROLE_FAN.title, 0)}</span>
+        </h2>
+        <p className="fan-lead sl" data-sp aria-label={ROLE_FAN.lead} style={{ ['--n' as string]: count(ROLE_FAN.lead) }}>
+          <span aria-hidden="true">{letters(ROLE_FAN.lead, 0)}</span>
+        </p>
         <Link to="/raschet" className="btn btn-primary">Узнать свою роль <Arrow /></Link>
       </div>
     </section>

@@ -233,11 +233,42 @@ button, input { font: inherit; color: inherit; }
   .burger[aria-expanded='true'] span { background: transparent; }
   .burger[aria-expanded='true'] span::before { transform: translateY(5px) rotate(45deg); }
   .burger[aria-expanded='true'] span::after { transform: translateY(-5px) rotate(-45deg); }
-  .mobile-menu.open {
+  /* Меню поверх страницы: выпадает из шапки, контент под ним не сдвигается.
+     Раскрытие — плавное: панель проявляется и чуть опускается, пункты появляются по очереди */
+  .mobile-menu {
     display: block;
+    position: absolute; left: 0; right: 0; top: 100%;
+    max-height: calc(100dvh - 72px); overflow-y: auto;
+    padding: 8px var(--gutter) 20px;
     border-top: 1px solid var(--line);
-    padding: 8px 0 20px;
+    background: var(--bg);
+    box-shadow: 0 24px 48px -16px rgba(0, 0, 0, 0.7);
+    opacity: 0; visibility: hidden; pointer-events: none;
+    transform: translateY(-10px);
+    /* закрытие — зеркально открытию: сначала по очереди уходят пункты (снизу вверх), затем панель */
+    transition: opacity .25s ease .16s, transform .35s cubic-bezier(.22, 1, .36, 1) .16s, visibility 0s linear .5s;
   }
+  .mobile-menu.open {
+    opacity: 1; visibility: visible; pointer-events: auto;
+    transform: none;
+    transition: opacity .25s ease, transform .35s cubic-bezier(.22, 1, .36, 1), visibility 0s;
+  }
+  .mobile-menu > * { opacity: 0; transform: translateY(-6px); transition: opacity .2s ease, transform .3s cubic-bezier(.22, 1, .36, 1); }
+  .mobile-menu.open > * { opacity: 1; transform: none; }
+  .mobile-menu > :nth-child(7) { transition-delay: 0s; }
+  .mobile-menu > :nth-child(6) { transition-delay: .03s; }
+  .mobile-menu > :nth-child(5) { transition-delay: .06s; }
+  .mobile-menu > :nth-child(4) { transition-delay: .09s; }
+  .mobile-menu > :nth-child(3) { transition-delay: .12s; }
+  .mobile-menu > :nth-child(2) { transition-delay: .15s; }
+  .mobile-menu > :nth-child(1) { transition-delay: .18s; }
+  .mobile-menu.open > :nth-child(1) { transition-delay: .04s; }
+  .mobile-menu.open > :nth-child(2) { transition-delay: .07s; }
+  .mobile-menu.open > :nth-child(3) { transition-delay: .10s; }
+  .mobile-menu.open > :nth-child(4) { transition-delay: .13s; }
+  .mobile-menu.open > :nth-child(5) { transition-delay: .16s; }
+  .mobile-menu.open > :nth-child(6) { transition-delay: .19s; }
+  .mobile-menu.open > :nth-child(7) { transition-delay: .22s; }
   .mobile-menu a.m-item {
     display: flex;
     justify-content: space-between;
@@ -249,6 +280,7 @@ button, input { font: inherit; color: inherit; }
   .mobile-menu a.m-item .mono { color: var(--text-3); }
   .mobile-menu .m-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 18px; }
 }
+@media (prefers-reduced-motion: reduce) { .mobile-menu, .mobile-menu > * { transition: none !important; transform: none !important; } }
 @media (max-width: 340px) {
   .logo span { display: none; }
 }
@@ -323,19 +355,19 @@ button, input { font: inherit; color: inherit; }
 .hero-terms {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
-  margin-top: 56px;
+  gap: 8px;
+  margin-top: 48px;
 }
 /* Термины — карточки: приглушённо-серый фон без рамок, лёгкое размытие поверх волн */
 .hero-terms > div {
-  padding: 20px 22px 22px;
-  border-radius: var(--radius);
+  padding: 14px 16px 15px; /* словарик — компактно, не спорит с заголовком */
+  border-radius: 14px;
   background: rgba(34, 37, 39, 0.72);
   -webkit-backdrop-filter: blur(12px);
   backdrop-filter: blur(12px);
 }
-.hero-terms b { display: block; font-weight: 500; font-size: 18px; line-height: 1.3; margin-bottom: 6px; }
-.hero-terms p { font-size: 15px; color: var(--text-2); line-height: 1.45; }
+.hero-terms b { display: block; font-weight: 500; font-size: 15px; line-height: 1.3; margin-bottom: 3px; }
+.hero-terms p { font-size: 13px; color: var(--text-3); line-height: 1.4; }
 
 .hero-visual {
   min-height: 640px;
@@ -399,10 +431,9 @@ button, input { font: inherit; color: inherit; }
   .hero-text { padding-top: 28px; }
 }
 @media (max-width: 560px) {
-  .hero-terms { grid-template-columns: 1fr; }
-  .hero-terms { gap: 8px; margin-top: 40px; }
-  .hero-terms > div { padding: 16px 18px; }
-  .hero-terms b { font-size: 17px; margin-bottom: 4px; }
+  .hero-terms::-webkit-scrollbar { display: none; }
+  .hero-terms > div { flex: 0 0 78%; padding: 12px 14px; scroll-snap-align: start; }
+  .hero-terms b { font-size: 15px; margin-bottom: 2px; }
   .hero-actions .btn { flex: 1 1 100%; }
   .orb-tag i { width: 18px; }
   .orb-tag { font-size: 10px; }
@@ -413,14 +444,24 @@ button, input { font: inherit; color: inherit; }
 .hero-center .hero-text { align-items: center; text-align: center; max-width: 960px; padding: 0; }
 .hero-center .hero-kicker { justify-content: center; }
 .hero-center h1 { font-size: clamp(32px, 4.2vw, 60px); line-height: 1.05; }
-.hero-center .hero-lead { margin-left: auto; margin-right: auto; max-width: 640px; }
+.hero-center .hero-lead { margin-left: auto; margin-right: auto; max-width: 720px; text-wrap: balance; } /* строки ровной длины, без одинокого слова в конце */
 .hero-center .hero-actions { justify-content: center; }
-.hero-center .hero-terms { width: 100%; max-width: 820px; text-align: left; }
+.hero-center .hero-terms { width: 100%; max-width: 680px; text-align: left; }
 @media (max-width: 960px) {
   .hero-center .hero-text { padding-top: 0; }
 }
 @media (max-width: 560px) {
   .hero-center .hero-kicker { flex-wrap: wrap; }
+  /* Телефон: карточки — в строку, листаются свайпом; края выходят за отступы страницы, видна следующая карточка */
+  .hero-center .hero-terms {
+    display: flex; gap: 8px; margin-top: 32px;
+    width: calc(100% + 2 * var(--gutter)); max-width: none;
+    margin-left: calc(-1 * var(--gutter)); margin-right: calc(-1 * var(--gutter));
+    padding: 0 var(--gutter);
+    overflow-x: auto; overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory; scroll-padding: 0 var(--gutter);
+    scrollbar-width: none; -webkit-overflow-scrolling: touch;
+  }
 }
 
 /* ============ Sections ============ */
@@ -518,10 +559,10 @@ button, input { font: inherit; color: inherit; }
 .jump .go {
   flex: none; width: 40px; height: 40px; border-radius: 50%;
   display: grid; place-items: center;
-  border: 1px solid var(--line-2);
-  transition: background .2s, color .2s, border-color .2s;
+  background: #fff; color: var(--bg); /* белый круг, тёмная стрелка */
+  transition: background .2s, color .2s;
 }
-.jump:hover .go { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+.jump:hover .go { background: var(--accent); color: var(--bg); }
 
 @media (max-width: 960px) {
   .tree { padding: 28px 20px 20px; }
@@ -625,6 +666,25 @@ button, input { font: inherit; color: inherit; }
 .pa-head { text-align: left; } /* заголовок «Игровой философии» — по левому краю, как у остальных секций */
 .pa-head .sec-label { margin-bottom: 16px; }
 .pa-head h2 { font-size: clamp(30px, 3.8vw, 54px); line-height: 1.05; letter-spacing: -0.035em; }
+/* Карта талантов под заголовком и подпись под ней */
+.pa-map { margin-top: 56px; }
+.pa-map-note { margin: 40px auto 0; max-width: 1000px; font-size: clamp(22px, 2.3vw, 32px); font-weight: 400; line-height: 1.3; letter-spacing: -0.02em; color: var(--text-3); text-align: center; text-wrap: balance; }
+/* Сдвиги «от → к»: четыре спокойных блока, без акцента */
+.pa-shifts {
+  margin-top: 40px; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
+  /* таблица без фона: только тонкие разделители между колонками */
+}
+.pa-shift { display: flex; flex-direction: column; gap: 10px; padding: 24px; }
+.pa-shift + .pa-shift { border-left: 1px solid rgba(255, 255, 255, 0.08); }
+.pa-shift s { font-size: 14px; line-height: 1.3; color: var(--text-3); text-decoration-thickness: 1px; }
+.pa-shift b { font-size: 22px; font-weight: 400; line-height: 1.25; letter-spacing: -0.02em; color: var(--text); text-wrap: balance; }
+@media (max-width: 960px) {
+  .pa-shifts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .pa-shift:nth-child(3) { border-left: 0; }
+  .pa-shift:nth-child(n+3) { border-top: 1px solid rgba(255, 255, 255, 0.08); }
+}
+@media (max-width: 860px) { .pa-shifts { margin-top: 28px; } .pa-shift { padding: 18px; } .pa-shift b { font-size: 18px; } }
+@media (max-width: 860px) { .pa-map { margin-top: 40px; } .pa-map-note { margin-top: 28px; font-size: 20px; } }
 
 /* Высказывание — в карточке: тёмная поверхность, снизу мягкий свет, кромка светлеет к низу */
 
@@ -640,11 +700,9 @@ button, input { font: inherit; color: inherit; }
 }
 .pa-panel {
   position: relative; z-index: 1;
-  display: flex; flex-direction: column; justify-content: space-between; gap: 24px;
+  display: flex; flex-direction: column; gap: 12px; /* текст сразу под заголовком */
   min-height: 340px; padding: 28px;
 }
-.pa-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
-.pa-top-ico { flex: none; color: rgba(255, 255, 255, 0.4); }
 .pa-panel h4 { font-size: 24px; font-weight: 500; letter-spacing: -0.02em; color: var(--text); }
 .pa-panel p { margin-top: 0; max-width: 300px; font-size: 15px; line-height: 1.5; color: rgba(255, 255, 255, 0.82); }
 /* Safari не обрезает по скруглённым углам слой с анимированным размытием (filter + animation),
@@ -667,7 +725,6 @@ button, input { font: inherit; color: inherit; }
     radial-gradient(34% 26% at 20% 30%, rgba(19, 73, 95, 0.8) 0%, rgba(19, 73, 95, 0) 100%);
   filter: blur(22px) saturate(1.2);
   opacity: 0.95;
-  animation: pa-aurora 18s ease-in-out infinite alternate;
   transition: filter .6s ease, opacity .6s ease;
 }
 /* Зерно и светлая кромка по нижнему краю — объём, как у стекла */
@@ -679,15 +736,7 @@ button, input { font: inherit; color: inherit; }
   opacity: 0.22; mix-blend-mode: overlay;
 }
 /* У каждой карточки свой рисунок — сдвиг фазы */
-.pa-item:nth-child(2) .pa-glow::before { animation-delay: -6s; }
-.pa-item:nth-child(3) .pa-glow::before { animation-delay: -12s; }
 .pa-item:hover .pa-glow::before { opacity: 1; filter: blur(20px) saturate(1.4) brightness(1.1); }
-@keyframes pa-aurora {
-  0%   { translate: -6% 0; rotate: -4deg; scale: 1; }
-  50%  { translate: 4% -4%; rotate: 3deg; scale: 1.08; }
-  100% { translate: 8% 2%; rotate: 6deg; scale: 1.02; }
-}
-@media (prefers-reduced-motion: reduce) { .pa-glow::before { animation: none; } }
 
 @media (max-width: 860px) {
   .pa-principles { grid-template-columns: 1fr; margin-top: 40px; }
@@ -766,23 +815,29 @@ button, input { font: inherit; color: inherit; }
   display: flex; flex-direction: column;
   padding: 8px 0 0 40px; /* без подложки — просто текст справа от фото */
 }
-.about-person { display: flex; flex-direction: column; gap: 10px; }
+.about-person { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; } /* роль — справа от имени */
 .about-body h3 { font-size: clamp(28px, 3vw, 40px); font-weight: 500; letter-spacing: -0.03em; line-height: 1.1; }
 .about-role {
-  align-self: flex-start;
+  align-self: center; /* по центру строки с именем */
   padding: 8px 14px; border-radius: 12px;
   font-size: 14px; color: var(--text-2);
   background: rgba(255, 255, 255, 0.06);
 }
-/* Заглушка биографии */
-.about-bio {
+/* Биография */
+.about-creds { margin-top: 10px; font-size: 17px; line-height: 1.5; color: var(--text-2); }
+/* Цитата: кавычки приглушены, текст чуть крупнее основного */
+.about-quote { margin: 28px 0 0; font-size: clamp(18px, 1.5vw, 21px); line-height: 1.45; letter-spacing: -0.01em; color: var(--text); }
+.about-quote .q { color: rgba(255, 255, 255, 0.32); }
+/* Методология — блок на мягкой подложке под биографией */
+.about-method {
   margin-top: 32px; flex: 1;
-  display: flex; align-items: center;
-  min-height: 140px; padding: 28px 32px;
+  display: flex; flex-direction: column; gap: 12px;
+  padding: 28px 32px;
   border-radius: var(--radius);
   background: rgba(255, 255, 255, 0.035);
-  color: var(--text-3); font-size: 15px;
 }
+.about-method h4 { margin-bottom: 4px; font-size: 18px; font-weight: 500; letter-spacing: -0.01em; color: var(--text); }
+.about-method p { font-size: 15px; line-height: 1.6; color: var(--text-2); }
 .about-team {
   margin-top: 24px; padding-top: 24px;
   border-top: 1px solid rgba(255, 255, 255, 0.07);
@@ -792,7 +847,9 @@ button, input { font: inherit; color: inherit; }
   .about { grid-template-columns: 1fr; }
   .author-photo { aspect-ratio: 1 / 1; }
   .about-body { padding: 16px 0 0; }
-  .about-bio { min-height: 110px; padding: 20px; margin-top: 24px; }
+  .about-creds { margin-top: 8px; font-size: 16px; }
+  .about-quote { margin-top: 20px; }
+  .about-method { padding: 20px; margin-top: 24px; }
 }
 
 /* ============ Contacts ============ */
@@ -813,19 +870,19 @@ button, input { font: inherit; color: inherit; }
 .contact-link b { display: block; font-size: 22px; font-weight: 500; letter-spacing: -0.02em; }
 .contact-link small { display: block; margin-top: 4px; font-size: 14px; color: var(--text-3); }
 .contact-link .go {
-  flex: none; width: 48px; height: 48px; border-radius: 50%;
+  /* как у переходов под схемой: белый круг 40px, при наведении — акцент, стрелка подёргивается */
+  flex: none; width: 40px; height: 40px; border-radius: 50%;
   display: grid; place-items: center;
   background: #ffffff; color: var(--bg);
-  transition: transform .25s cubic-bezier(.22, 1, .36, 1);
+  transition: background .2s, color .2s;
 }
 .contact-link:hover { background: #272a2d; transform: translateY(-2px); }
-.contact-link:hover .go { transform: translateX(4px); }
+.contact-link:hover .go { background: var(--accent); color: var(--bg); }
 .contact-link:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
 @media (max-width: 860px) {
   .contacts-card { grid-template-columns: 1fr; gap: 32px; }
   .contact-link { padding: 22px 20px; }
   .contact-link b { font-size: 18px; }
-  .contact-link .go { width: 40px; height: 40px; }
 }
 
 /* ============ Footer ============ */
@@ -1148,6 +1205,8 @@ button, input { font: inherit; color: inherit; }
 .jump .go svg { animation: go-nudge 3.2s ease-in-out infinite; }
 .jump:nth-child(2) .go svg { animation-delay: .3s; }
 .jump:nth-child(3) .go svg { animation-delay: .6s; }
+.contact-link .go svg { animation: go-nudge 3.2s ease-in-out infinite; }
+.contact-link + .contact-link .go svg { animation-delay: .3s; }
 @keyframes go-nudge {
   0%, 50%, 100% { transform: translateX(0); }
   63% { transform: translateX(5px); }
@@ -1155,4 +1214,198 @@ button, input { font: inherit; color: inherit; }
   85% { transform: translateX(3px); }
   94% { transform: translateX(0); }
 }
-@media (prefers-reduced-motion: reduce) { .jump .go svg { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .jump .go svg, .contact-link .go svg { animation: none; } }
+
+/* Без «висячих» слов: последний перенос подбирается так, чтобы в строке не оставалось одно слово */
+p, li, dd, blockquote, figcaption { text-wrap: pretty; }
+
+/* Телефон: заголовок hero чуть крупнее, подзаголовок мельче */
+@media (max-width: 560px) {
+  .hero-center h1 { font-size: clamp(30px, 8.4vw, 38px); } /* по ширине экрана: «SoulVibe – экосистема» держится в одной строке */
+  .hero-center .hero-lead { font-size: 16px; }
+}
+
+/* ============ Hero: появление при загрузке и параллакс при прокрутке ============
+   Появление — keyframes с fill-mode backwards: после окончания свойства отдаются обычным стилям,
+   поэтому прокрутка (translate / opacity от --hp) не конфликтует с анимацией. */
+.hero-anim { --hp: 0; }
+@keyframes ha-rise { from { opacity: 0; transform: translateY(28px) scale(0.985); filter: blur(12px); } to { opacity: 1; transform: none; filter: blur(0); } }
+@keyframes ha-up { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+@keyframes ha-fade { from { opacity: 0; } to { opacity: 1; } }
+
+/* Загрузка: волны проявляются, строки заголовка всплывают из размытия по очереди, затем текст, кнопки и карточки */
+.hero-anim .hero-dots { animation: ha-fade 2s ease .1s backwards; }
+.hero-anim .ha-word { display: inline-block; white-space: nowrap; }
+.hero-anim h1 .gt { background: none; -webkit-text-fill-color: currentColor; color: inherit; } /* цвет градиента — у каждой буквы, см. useLetterGradient */
+.hero-anim .ha-ch { display: inline-block; animation: ha-letter .9s cubic-bezier(.19, 1, .22, 1) calc(.3s + var(--c) * var(--d, 15ms)) backwards; }
+/* в подзаголовке букв больше — шаг меньше, чтобы он появлялся и уходил за то же время, что и заголовок */
+.hero-anim .hero-lead .ha-ch { --d: 8ms; --step: 0.002; }
+@keyframes ha-letter { from { opacity: 0; transform: translateX(40px); } to { opacity: 1; transform: none; } }
+.hero-anim .hero-actions { animation: ha-up .9s cubic-bezier(.19, 1, .22, 1) .3s backwards; }
+.hero-anim .hero-terms > div { animation: ha-up .9s cubic-bezier(.19, 1, .22, 1) .3s backwards; }
+
+/* Прокрутка: слои уходят вверх с разной скоростью, волны отстают и затихают, текст гаснет ближе к концу экрана */
+.hero-anim .hero-dots { translate: 0 calc(var(--hp) * 140px); scale: calc(1 + var(--hp) * 0.08); opacity: calc(1 - var(--hp) * 0.7); }
+/* Заголовок уходит по буквам, как во второй части эффекта Moving Letters #12: буквы по очереди сдвигаются влево и гаснут.
+   Прогресс каждой буквы привязан к прокрутке, при возврате наверх буквы возвращаются */
+.hero-anim .ha-ch {
+  --lp: clamp(0, (var(--hp) - 0.04 - var(--c) * var(--step, 0.004)) * 6, 1);
+  translate: calc(var(--lp) * -30px) 0;
+  opacity: calc(1 - var(--lp));
+}
+/* Кнопки разлетаются, как карточки: левая — влево, правая — вправо, и гаснут */
+.hero-anim .hero-actions > :first-child { translate: calc(var(--hp) * -320px) 0; }
+.hero-anim .hero-actions > :last-child { translate: calc(var(--hp) * 320px) 0; }
+.hero-anim .hero-actions > * { scale: calc(1 - var(--hp) * 0.18); opacity: calc(1 - clamp(0, var(--hp) * 2.4, 1)); }
+.hero-anim h1 { translate: 0 calc(var(--hp) * -80px); }
+.hero-anim .hero-lead { translate: 0 calc(var(--hp) * -55px); }
+.hero-anim .hero-actions { translate: 0 calc(var(--hp) * -35px); }
+.hero-anim .hero-terms { translate: 0 calc(var(--hp) * -15px); }
+/* Карточки разъезжаются: левая — влево, правая — вправо, средняя уменьшается; все гаснут */
+.hero-anim .hero-terms > div {
+  translate: calc((var(--i) - 1) * var(--hp) * 320px) 0;
+  scale: calc(1 - var(--hp) * 0.18);
+  opacity: calc(1 - clamp(0, var(--hp) * 2.4, 1));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-anim .hero-dots, .hero-anim .ha-ch, .hero-anim .hero-actions, .hero-anim .hero-terms > div { animation: none; }
+  .hero-anim .hero-dots, .hero-anim h1, .hero-anim .hero-lead, .hero-anim .hero-actions, .hero-anim .hero-terms { translate: none; scale: none; }
+  .hero-anim .hero-dots, .hero-anim h1, .hero-anim .hero-lead, .hero-anim .hero-actions, .hero-anim .hero-actions > *, .hero-anim .ha-ch, .hero-anim .hero-terms > div { opacity: 1; translate: none; scale: none; }
+}
+
+/* ============ Секции: буквы и блоки, привязанные к прокрутке (см. useScrollParts) ============
+   --en: вход снизу (0 → 1), --ex: уход вверх (0 → 1), --c — номер буквы, --n — сколько букв в блоке.
+   Буква выезжает справа на 40px и проявляется; уходя — сдвигается влево на 30px и гаснет. Порядок — по номеру. */
+.sl .ha-word { display: inline-block; white-space: nowrap; }
+.sl .gt { background: none; -webkit-text-fill-color: currentColor; color: inherit; } /* цвет — у каждой буквы */
+.sl .ha-ch {
+  display: inline-block;
+  --ap: clamp(0, (var(--en, 1) - var(--c) / var(--n) * 0.5) * 2, 1);
+  --ep: clamp(0, (var(--ex, 0) - var(--c) / var(--n) * 0.5) * 2, 1);
+  translate: calc((1 - var(--ap)) * 40px - var(--ep) * 30px) 0;
+  opacity: calc(var(--ap) * (1 - var(--ep)));
+}
+
+/* Переходы под схемой: входят снизу, при уходе разлетаются — левый влево, правый вправо, средний уменьшается */
+.jumps[data-sp] > * { opacity: calc(var(--en, 1) * (1 - clamp(0, var(--ex, 0) * 1.6, 1))); scale: calc(1 - var(--ex, 0) * 0.18); }
+.jumps[data-sp] > :nth-child(1) { translate: calc(var(--ex, 0) * -320px) calc((1 - var(--en, 1)) * 30px); }
+.jumps[data-sp] > :nth-child(2) { translate: 0 calc((1 - var(--en, 1)) * 30px); }
+.jumps[data-sp] > :nth-child(3) { translate: calc(var(--ex, 0) * 320px) calc((1 - var(--en, 1)) * 30px); }
+#ecosystem { overflow-x: clip; }
+
+/* Группа блоков, поднимающихся снизу по очереди вслед за прокруткой (только вход) */
+.sp-stagger[data-sp] > * {
+  --lp: clamp(0, var(--en, 1) * 1.6 - var(--i, 0) * 0.2, 1);
+  opacity: var(--lp); translate: 0 calc((1 - var(--lp)) * 48px);
+}
+
+/* ============ «О проекте»: появление блока (класс is-in) ============ */
+/* Фото: шторка открывается сверху вниз (сначала видна верхняя часть, которая уже на экране),
+   одновременно карточка поднимается и чуть увеличивается до своего размера */
+.about-reveal .author-photo {
+  opacity: 0; translate: 0 60px; scale: .94;
+  clip-path: inset(0 0 100% 0 round var(--radius-lg));
+  transition: clip-path 1.3s cubic-bezier(.65, 0, .35, 1), opacity .6s ease, translate 1.3s cubic-bezier(.22, 1, .36, 1), scale 1.3s cubic-bezier(.22, 1, .36, 1), transform .6s cubic-bezier(.22, 1, .36, 1), box-shadow .6s ease;
+}
+.about-reveal.is-in .author-photo { opacity: 1; translate: 0 0; scale: 1; clip-path: inset(0 0 0 0 round var(--radius-lg)); }
+.about-reveal.is-in .author-photo.is-tilting { transition: clip-path 1.3s, opacity .6s, translate 1.3s, scale 1.3s, transform .12s ease-out, box-shadow .3s ease; }
+.about-reveal .about-body > * { opacity: 0; translate: 0 18px; transition: opacity .7s ease, translate .8s cubic-bezier(.22, 1, .36, 1); }
+.about-reveal.is-in .about-body > * { opacity: 1; translate: 0 0; }
+.about-reveal.is-in .about-body > :nth-child(1) { transition-delay: .25s; }
+.about-reveal.is-in .about-body > :nth-child(2) { transition-delay: .35s; }
+.about-reveal.is-in .about-body > :nth-child(3) { transition-delay: .45s; }
+.about-reveal.is-in .about-body > :nth-child(4) { transition-delay: .9s; }
+.about-reveal.is-in .about-body > :nth-child(5) { transition-delay: 1.05s; }
+/* роль — «выскакивает» рядом с именем */
+.about-reveal .about-role { opacity: 0; scale: .8; transition: opacity .5s ease, scale .6s cubic-bezier(.34, 1.56, .64, 1); }
+.about-reveal.is-in .about-role { opacity: 1; scale: 1; transition-delay: .5s; }
+/* цитата — по буквам, как заголовки (эффект Moving Letters #12) */
+.about-quote .ha-word { display: inline-block; white-space: nowrap; }
+.about-quote .ha-ch, .about-quote .q { display: inline-block; }
+.about-reveal .about-quote .ha-ch, .about-reveal .about-quote .q { opacity: 0; transform: translateX(40px); }
+.about-reveal.is-in .about-quote .ha-ch, .about-reveal.is-in .about-quote .q { opacity: 1; transform: none; transition: opacity .9s cubic-bezier(.19, 1, .22, 1), transform .9s cubic-bezier(.19, 1, .22, 1); transition-delay: calc(.5s + var(--c, 0) * 8ms); }
+.about-reveal.is-in .about-quote .q:last-child { transition-delay: calc(.5s + var(--n) * 8ms); }
+@media (prefers-reduced-motion: reduce) {
+  .about-reveal .author-photo { clip-path: none; opacity: 1; translate: none; scale: none; transition: none; }
+  .about-reveal .about-body > *, .about-reveal .about-role, .about-reveal .about-quote .ha-ch, .about-reveal .about-quote .q { opacity: 1; translate: none; scale: none; transform: none; transition: none; }
+}
+
+/* ============ «Напишите нам»: ссылки выезжают справа по очереди, круги со стрелкой выскакивают ============ */
+.contacts-reveal .contact-link { opacity: 0; translate: 80px 0; transition: opacity .7s ease, translate 1s cubic-bezier(.22, 1, .36, 1), background-color .25s ease, transform .25s cubic-bezier(.22, 1, .36, 1); }
+.contacts-reveal.is-in .contact-link { opacity: 1; translate: 0 0; }
+.contacts-reveal.is-in .contact-link:nth-child(1) { transition-delay: .2s, .2s, 0s, 0s; }
+.contacts-reveal.is-in .contact-link:nth-child(2) { transition-delay: .35s, .35s, 0s, 0s; }
+.contacts-reveal .contact-link .go { scale: 0; transition: scale .6s cubic-bezier(.34, 1.56, .64, 1), background .2s, color .2s; }
+.contacts-reveal.is-in .contact-link .go { scale: 1; }
+.contacts-reveal.is-in .contact-link:nth-child(1) .go { transition-delay: .7s, 0s, 0s; }
+.contacts-reveal.is-in .contact-link:nth-child(2) .go { transition-delay: .85s, 0s, 0s; }
+@media (prefers-reduced-motion: reduce) {
+  .contacts-reveal .contact-link, .contacts-reveal .contact-link .go { opacity: 1; translate: none; scale: none; transition: none; }
+}
+#contacts { overflow-x: clip; }
+
+/* ============ Страница расчёта: появление при открытии ============ */
+@keyframes ca-left { from { opacity: 0; transform: translateX(-40px); } to { opacity: 1; transform: none; } }
+@keyframes ca-right { from { opacity: 0; transform: translateX(40px); } to { opacity: 1; transform: none; } }
+@keyframes ca-up { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+.calc-anim .calc-side { animation: ca-left .9s cubic-bezier(.22, 1, .36, 1) .05s backwards; }
+.calc-anim .form-card { animation: ca-right .9s cubic-bezier(.22, 1, .36, 1) .15s backwards; }
+/* заголовок по буквам — как на главной */
+.calc-anim h1 .ha-word { display: inline-block; white-space: nowrap; }
+.calc-anim h1 .ha-ch { display: inline-block; animation: ha-letter .9s cubic-bezier(.19, 1, .22, 1) calc(.35s + var(--c) * 20ms) backwards; }
+.calc-anim .calc-free, .calc-anim .back-link { animation: ca-up .7s cubic-bezier(.22, 1, .36, 1) .3s backwards; }
+.calc-anim .calc-side .lead { animation: ca-up .8s cubic-bezier(.22, 1, .36, 1) .55s backwards; }
+.calc-anim .calc-step { animation: ca-left .7s cubic-bezier(.22, 1, .36, 1) backwards; }
+.calc-anim .calc-step:nth-child(1) { animation-delay: .7s; }
+.calc-anim .calc-step:nth-child(2) { animation-delay: .8s; }
+.calc-anim .calc-step:nth-child(3) { animation-delay: .9s; }
+/* форма — заголовок, подсказка и поля по очереди */
+.calc-anim .form-card > h2, .calc-anim .form-card > .hint, .calc-anim .form > *, .calc-anim .form-foot { animation: ca-up .7s cubic-bezier(.22, 1, .36, 1) backwards; }
+.calc-anim .form-card > h2 { animation-delay: .35s; }
+.calc-anim .form-card > .hint { animation-delay: .42s; }
+.calc-anim .form > :nth-child(1) { animation-delay: .5s; }
+.calc-anim .form > :nth-child(2) { animation-delay: .57s; }
+.calc-anim .form > :nth-child(3) { animation-delay: .64s; }
+.calc-anim .form > :nth-child(4) { animation-delay: .71s; }
+.calc-anim .form > :nth-child(5) { animation-delay: .78s; }
+.calc-anim .form > :nth-child(6) { animation-delay: .85s; }
+.calc-anim .form > :nth-child(n+7) { animation-delay: .92s; }
+.calc-anim .form-foot { animation-delay: 1s; }
+@media (prefers-reduced-motion: reduce) {
+  .calc-anim .calc-side, .calc-anim .form-card, .calc-anim h1 .ha-ch, .calc-anim .calc-free, .calc-anim .back-link,
+  .calc-anim .calc-side .lead, .calc-anim .calc-step, .calc-anim .form-card > h2, .calc-anim .form-card > .hint,
+  .calc-anim .form > *, .calc-anim .form-foot { animation: none; }
+}
+
+/* ============ Страница результата: появление ============ */
+@keyframes ra-card { from { opacity: 0; translate: 0 40px; scale: .94; filter: blur(10px); } to { opacity: 1; translate: 0 0; scale: 1; filter: none; } }
+@keyframes ra-glow { 0% { box-shadow: 0 0 0 0 rgba(189, 255, 255, 0); } 35% { box-shadow: 0 0 80px 4px rgba(189, 255, 255, 0.28); } 100% { box-shadow: 0 0 0 0 rgba(189, 255, 255, 0); } }
+@keyframes ra-photo { from { scale: 1.18; filter: blur(18px) brightness(1.5) saturate(.6); } to { scale: 1; filter: blur(0) brightness(1) saturate(1); } }
+@keyframes ra-up { from { opacity: 0; translate: 0 16px; } to { opacity: 1; translate: 0 0; } }
+@keyframes ra-right { from { opacity: 0; translate: 40px 0; } to { opacity: 1; translate: 0 0; } }
+@keyframes ra-role { from { opacity: 0; letter-spacing: .2em; filter: blur(8px); } to { opacity: 1; filter: none; } }
+.res-anim .back-link, .res-anim .demo-banner { animation: ra-up .6s cubic-bezier(.22, 1, .36, 1) .05s backwards; }
+.res-anim .res-card { animation: ra-card 1.1s cubic-bezier(.22, 1, .36, 1) .1s backwards, ra-glow 1.8s ease .5s; }
+.res-anim .res-photo { overflow: hidden; }
+.res-anim .res-photo img { animation: ra-photo 1.8s cubic-bezier(.22, 1, .36, 1) .1s backwards; }
+.res-anim .res-photo figcaption { animation: ra-up .8s cubic-bezier(.22, 1, .36, 1) .7s backwards; }
+.res-anim .res-kicker { display: inline-block; animation: ra-up .7s cubic-bezier(.22, 1, .36, 1) .8s backwards; }
+.res-anim .res-head h1 { animation: ra-role 1.2s cubic-bezier(.22, 1, .36, 1) .9s backwards; }
+.res-anim .res-item { animation: ra-up .7s cubic-bezier(.22, 1, .36, 1) backwards; }
+.res-anim .res-item:nth-child(1) { animation-delay: 1.15s; }
+.res-anim .res-item:nth-child(2) { animation-delay: 1.25s; }
+.res-anim .res-item:nth-child(3) { animation-delay: 1.35s; }
+.res-anim .res-item:nth-child(n+4) { animation-delay: 1.45s; }
+.res-anim .next { animation: ra-right 1s cubic-bezier(.22, 1, .36, 1) .5s backwards; }
+.res-anim .next > div > *, .res-anim .next-actions > * { animation: ra-up .7s cubic-bezier(.22, 1, .36, 1) backwards; }
+.res-anim .next > div:first-child > :nth-child(1) { animation-delay: .75s; }
+.res-anim .next > div:first-child > :nth-child(2) { animation-delay: .85s; }
+.res-anim .next > div:first-child > :nth-child(3) { animation-delay: .95s; }
+.res-anim .next-actions > :nth-child(1) { animation-delay: 1.15s; }
+.res-anim .next-actions > :nth-child(2) { animation-delay: 1.22s; }
+.res-anim .next-actions > :nth-child(n+3) { animation-delay: 1.3s; }
+@media (prefers-reduced-motion: reduce) {
+  .res-anim .back-link, .res-anim .demo-banner, .res-anim .res-card, .res-anim .res-photo img, .res-anim .res-photo figcaption,
+  .res-anim .res-kicker, .res-anim .res-head h1, .res-anim .res-item, .res-anim .next, .res-anim .next > div > *, .res-anim .next-actions > * { animation: none; }
+}

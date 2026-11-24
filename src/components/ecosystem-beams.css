@@ -152,3 +152,34 @@
   .bnode-ico svg { width: 20px; height: 20px; }
   .bnode-status { border-radius: 10px; }
 }
+
+/* ============ Появление схемы (класс is-in ставится, когда схема входит в экран) ============
+   Только прозрачность, размытие и прорисовка линий — без сдвигов, чтобы не сбить расчёт путей. */
+.beams-reveal .beams-hub,
+.beams-reveal .beams-hub-text,
+.beams-reveal .tree-label,
+.beams-reveal .bnode,
+.beams-reveal .beams-note { opacity: 0; filter: blur(8px); transition: opacity .8s ease, filter .8s ease; }
+.beams-reveal .beam-base { stroke-dasharray: 1; stroke-dashoffset: 1; transition: stroke-dashoffset 1.4s cubic-bezier(.65, 0, .35, 1); }
+.beams-reveal .beam-pulse { visibility: hidden; }
+
+.beams-reveal.is-in .beams-hub,
+.beams-reveal.is-in .beams-hub-text,
+.beams-reveal.is-in .tree-label,
+.beams-reveal.is-in .bnode,
+.beams-reveal.is-in .beams-note { opacity: 1; filter: none; }
+.beams-reveal.is-in .beam-base { stroke-dashoffset: 0; }
+.beams-reveal.is-in .beam-pulse { visibility: visible; transition: visibility 0s 1.6s; }
+/* порядок: центр → линии → направления → блоки */
+.beams-reveal.is-in .beams-hub-text { transition-delay: .15s; }
+.beams-reveal.is-in .beam-base { transition-delay: .3s; }
+.beams-reveal.is-in .tree-label { transition-delay: .8s; }
+.beams-reveal.is-in .tree-group > .bnode { transition-delay: 1.05s; }
+.beams-reveal.is-in .tree-group > .bnode + .bnode { transition-delay: 1.2s; }
+.beams-reveal.is-in .tree-group.is-center > .bnode,
+.beams-reveal.is-in .beams-note { transition-delay: 1.35s; }
+@media (prefers-reduced-motion: reduce) {
+  .beams-reveal .beams-hub, .beams-reveal .beams-hub-text, .beams-reveal .tree-label, .beams-reveal .bnode, .beams-reveal .beams-note { opacity: 1; filter: none; transition: none; }
+  .beams-reveal .beam-base { stroke-dashoffset: 0; transition: none; }
+  .beams-reveal .beam-pulse { visibility: visible; }
+}

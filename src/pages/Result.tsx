@@ -6,7 +6,9 @@ import { SolarIcon } from '../components/ui/SolarIcon'
 
 export default function Result({ demo = false }: { demo?: boolean }) {
   return (
-    <section className="result">
+    <section className="result res-anim">
+      {/* res-anim — появление результата: карточка персонажа «проявляется» со вспышкой,
+          фото плавно отъезжает, затем роль и пункты; справа по очереди — «Что дальше» */}
       <div className="wrap">
         <Link to="/" className="back-link" style={{ marginBottom: 20 }}>
           <span style={{ transform: 'rotate(180deg)', display: 'inline-flex' }}><Arrow size={14} /></span>На главную

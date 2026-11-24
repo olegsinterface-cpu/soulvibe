@@ -4,6 +4,7 @@ import { Link, navigate } from '../router'
 import { LINKS } from '../content'
 import { Arrow } from '../components/Icons'
 import TalentMap from '../components/TalentMap'
+import { letters } from '../components/ui/letters'
 
 type Values = { birth: string; email: string; tg: string; consent: boolean }
 type Errors = Partial<Record<keyof Values, string>>
@@ -104,14 +105,15 @@ export default function Calc() {
 
   return (
     <>
-    <section className="calc">
+    {/* calc-anim — появление страницы: левая панель выезжает слева, форма справа, затем по очереди содержимое */}
+    <section className="calc calc-anim">
       <div className="wrap calc-grid">
         <aside className="calc-side">
           {/* фон — те же волны из точек, что в hero */}
           <HeroDots className="in-calc" />
           <Link to="/" className="back-link"><span style={{ transform: 'rotate(180deg)', display: 'inline-flex' }}><Arrow size={14} /></span>На главную</Link>
           <span className="calc-free">Бесплатно</span>
-          <h1>Расчёт таланта</h1>
+          <h1 aria-label="Расчёт таланта"><span aria-hidden="true">{letters('Расчёт таланта', 0)}</span></h1>
           <p className="lead">На сайте вы получите свою роль и её описание. Персонажа можно узнать в боте с ИИ-ментором.</p>
           <div className="calc-steps">
             <div className="calc-step on"><span className="n">1</span>Узнать роль<small>здесь, на сайте</small></div>

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link, asset } from '../router'
 import { NAV } from '../content'
 import { ShinyButton } from './ui/ShinyButton'
@@ -16,8 +16,24 @@ export default function Header() {
 
   const close = () => setOpen(false)
 
+  // Открытое меню закрывается нажатием в любом месте вне шапки и меню, а также клавишей Esc
+  const headerRef = useRef<HTMLElement>(null)
+  useEffect(() => {
+    if (!open) return
+    const onDown = (e: PointerEvent) => {
+      if (!headerRef.current?.contains(e.target as Node)) setOpen(false)
+    }
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpen(false) }
+    document.addEventListener('pointerdown', onDown)
+    document.addEventListener('keydown', onKey)
+    return () => {
+      document.removeEventListener('pointerdown', onDown)
+      document.removeEventListener('keydown', onKey)
+    }
+  }, [open])
+
   return (
-    <header className={`header${scrolled || open ? ' scrolled' : ''}`}>
+    <header ref={headerRef} className={`header${scrolled || open ? ' scrolled' : ''}`}>
       <div className="wrap">
         <div className="header-in">
           <Link to="/" className="logo" onClick={close} aria-label="SoulVibe — на главную">

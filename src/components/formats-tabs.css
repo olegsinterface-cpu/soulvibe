@@ -30,7 +30,16 @@
 }
 .ft-visual-label { font-size: 14px; color: var(--text-3); margin-bottom: 24px; }
 
-.ft-chat { display: flex; flex-direction: column; gap: 20px; margin-top: auto; /* сообщения прижаты к нижнему краю, как в мессенджере */ }
+/* Чат: невидимая полная копия задаёт высоту, живой диалог прижат к нижнему краю поверх неё */
+.ft-chat-box { position: relative; margin-top: auto; }
+.ft-chat { display: flex; flex-direction: column; justify-content: flex-end; }
+.ft-chat.is-ghost { visibility: hidden; }
+.ft-chat.is-live { position: absolute; left: 0; right: 0; bottom: 0; }
+/* Обёртка сообщения раскрывается по высоте; запас по краям (отрицательные поля + отступы внутри),
+   чтобы свечение аватара не обрезалось */
+.ft-msg-wrap { display: grid; grid-template-rows: 1fr; overflow: hidden; margin: -14px -18px; }
+.ft-msg-in { min-height: 0; display: flex; flex-direction: column; padding: 14px 18px; }
+.ft-msg-wrap + .ft-msg-wrap .ft-msg { margin-top: 20px; }
 .ft-bubble {
   min-width: 0; margin: 0; padding: 12px 16px;
   border-radius: 16px; font-size: 14px; line-height: 1.5;
@@ -173,6 +182,7 @@
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.16);
   transition: background-color .2s ease, color .2s ease, box-shadow .2s ease;
 }
+.ft-brand.is-bottom { display: none; } /* нижняя копия — только на телефоне */
 .ft-brand:hover .go { background: var(--accent); color: var(--bg); box-shadow: none; }
 
 @media (max-width: 960px) {
@@ -186,5 +196,54 @@
 @media (max-width: 560px) {
   .ft-seg-btn { font-size: 13px; min-height: 52px; padding: 6px 6px; }
   .ft-seg-row { margin-bottom: 16px; }
+  /* Телефон: переход к сотрудничеству — в самом низу секции, по центру */
+  .ft-seg-row .ft-brand { display: none; }
+  /* по всей ширине: текст слева, круг со стрелкой справа; серая плашка без рамки, как у других блоков */
+  .ft-brand.is-bottom {
+    display: flex; justify-content: space-between; width: 100%; margin: 24px 0 0;
+    padding: 14px 14px 14px 20px; border-radius: var(--radius); background: var(--bg-2);
+  }
 }
 @media (prefers-reduced-motion: reduce) { .ft-seg-thumb { transition: none; } }
+
+/* ============ Анимация секции ============ */
+/* Переключатель поднимается снизу вслед за прокруткой (только вход, без затухания при уходе) */
+.sp-rise[data-sp] { opacity: var(--en, 1); translate: 0 calc((1 - var(--en, 1)) * 24px); }
+/* Карточки: левая выезжает слева, правая — справа */
+.ft-reveal .ft-info, .ft-reveal .ft-visual { opacity: 0; transition: opacity .7s ease, translate .9s cubic-bezier(.22, 1, .36, 1); }
+.ft-reveal .ft-info { translate: -48px 0; }
+.ft-reveal .ft-visual { translate: 48px 0; transition-delay: .12s; }
+/* правая карточка появляется по своему входу в экран — на телефоне она стоит ниже левой */
+.ft-reveal.is-in .ft-info, .ft-reveal .ft-visual.is-in { opacity: 1; translate: 0 0; }
+/* Затем по очереди — сообщения диалога (как в чате) или шаги */
+@keyframes ft-pop { from { opacity: 0; transform: translateY(14px) scale(.97); } to { opacity: 1; transform: none; } }
+.ft-reveal .ft-visual:not(.is-in) .ft-steps li { opacity: 0; }
+/* Новое сообщение: место под него раскрывается снизу (прошлые поднимаются), само сообщение всплывает */
+@keyframes ft-grow { from { grid-template-rows: 0fr; } to { grid-template-rows: 1fr; } }
+.is-live .ft-msg-wrap { animation: ft-grow .45s cubic-bezier(.22, 1, .36, 1); }
+.is-live .ft-msg { animation: ft-pop .5s cubic-bezier(.22, 1, .36, 1) .06s backwards; }
+/* Шаги: линия прорисовывается сверху вниз, точки по очереди «загораются», текст выезжает слева */
+.ft-reveal .ft-visual.is-in .ft-steps::before { animation: ft-line 1.2s cubic-bezier(.65, 0, .35, 1) .45s backwards; transform-origin: top; }
+@keyframes ft-line { from { transform: scaleY(0); } to { transform: none; } }
+.ft-reveal .ft-visual.is-in .ft-steps li { animation: ft-step .7s cubic-bezier(.22, 1, .36, 1) calc(.5s + var(--i) * .38s) backwards; }
+.ft-reveal .ft-visual.is-in .ft-steps li::before { animation: ft-dot .6s cubic-bezier(.34, 1.56, .64, 1) calc(.45s + var(--i) * .38s) backwards; }
+@keyframes ft-step { from { opacity: 0; transform: translateX(-16px); filter: blur(4px); } to { opacity: 1; transform: none; filter: none; } }
+@keyframes ft-dot {
+  0% { transform: scale(0); box-shadow: inset 0 0 0 2px var(--accent), 0 0 0 0 rgba(189, 255, 255, 0.6); }
+  60% { transform: scale(1.25); box-shadow: inset 0 0 0 2px var(--accent), 0 0 0 8px rgba(189, 255, 255, 0); }
+  100% { transform: none; }
+}
+.ft-msg.user { transform-origin: right bottom; }
+.ft-msg.mentor { transform-origin: left bottom; }
+@media (prefers-reduced-motion: reduce) {
+  .ft-reveal .ft-info, .ft-reveal .ft-visual { opacity: 1; translate: none; transition: none; }
+  .ft-reveal .ft-msg, .ft-reveal .ft-msg-wrap, .ft-reveal .ft-steps li, .ft-reveal .ft-steps li::before, .ft-reveal .ft-steps::before { opacity: 1 !important; animation: none !important; }
+}
+/* метка низа диалога — по ней запускается показ сообщений */
+.ft-chat-end { position: absolute; left: 0; bottom: 0; width: 1px; height: 1px; pointer-events: none; }
+/* Телефон: карточка выше экрана, поэтому диалог заполняется сверху вниз — сообщения видны сразу,
+   как только до карточки долистали; запуск — когда в экран вошёл верх диалога */
+@media (max-width: 960px) {
+  .ft-chat.is-live { top: 0; bottom: auto; justify-content: flex-start; }
+  .ft-chat-end { top: 160px; bottom: auto; }
+}

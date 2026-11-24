@@ -85,6 +85,9 @@
 .tmap-label b::before { content: ''; flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--c); box-shadow: 0 0 8px var(--c); }
 .tmap-label > span { display: flex; flex-direction: column; gap: 2px; font-size: 14px; line-height: 1.35; color: var(--text-2); }
 
+/* Только карта, без пути идеи */
+.tmap.is-map-only { grid-template-columns: 1fr; }
+
 /* Узкий десктоп и планшет: путь сверху, карта под ним */
 @media (max-width: 1180px) {
   .tmap { grid-template-columns: 1fr; gap: 48px; }
@@ -106,9 +109,36 @@
   .tmap-hub { top: calc((100vw - 64px) * 300 / 860) !important; }
   .tmap-label { position: static; width: auto; max-width: none; text-align: left !important; align-items: flex-start !important; }
   .tmap-label::after { display: none; }
-  .tmap-label { padding: 0; background: none; box-shadow: none; }
+  /* плашки как у тултипов на десктопе, только без уголка — текст не сливается с фоном карты */
+  .tmap-label { padding: 12px 12px 14px; border-radius: 14px; }
+  .tmap-canvas { gap: var(--stack); }
+  .tmap { padding-left: 12px; padding-right: 12px; }
   .tmap-label > span { font-size: 13px; }
   .tmap-label b { font-size: 16px; }
 }
 
 @media (prefers-reduced-motion: reduce) { .tmap-pulse { display: none; } }
+
+/* ============ Появление (класс is-in, когда схема входит в экран) ============ */
+.tmap-reveal .tmap-line { stroke-dasharray: 1; stroke-dashoffset: 1; transition: stroke-dashoffset 1.6s cubic-bezier(.65, 0, .35, 1) .15s; }
+.tmap-reveal.is-in .tmap-line { stroke-dashoffset: 0; }
+.tmap-reveal .tmap-grid { opacity: 0; transition: opacity 1.2s ease; }
+.tmap-reveal.is-in .tmap-grid { opacity: 1; }
+.tmap-reveal .tmap-pulse { visibility: hidden; }
+.tmap-reveal.is-in .tmap-pulse { visibility: visible; transition: visibility 0s 1.8s; }
+/* центр — проявляется из размытия */
+.tmap-reveal .tmap-hub, .tmap-reveal .tmap-hub-pill, .tmap-reveal .tmap-pill { opacity: 0; filter: blur(8px); transition: opacity .9s ease .2s, filter .9s ease .2s; }
+.tmap-reveal.is-in .tmap-hub, .tmap-reveal.is-in .tmap-hub-pill, .tmap-reveal.is-in .tmap-pill { opacity: 1; filter: none; }
+/* шары — по очереди вспыхивают из точки */
+.tmap-orb-pop { transform-box: fill-box; transform-origin: center; }
+.tmap-reveal .tmap-orb-pop { opacity: 0; transform: scale(0.2); transition: opacity .5s ease, transform .7s cubic-bezier(.34, 1.56, .64, 1); }
+.tmap-reveal.is-in .tmap-orb-pop { opacity: 1; transform: none; transition-delay: calc(.6s + var(--o) * .12s); }
+/* подписи (тултипы и шаги пути) — проявляются и чуть поднимаются */
+.tmap-reveal .tmap-label, .tmap-reveal .tmap-steps li { opacity: 0; translate: 0 10px; transition: opacity .6s ease, translate .7s cubic-bezier(.22, 1, .36, 1); }
+.tmap-reveal.is-in .tmap-label, .tmap-reveal.is-in .tmap-steps li { opacity: 1; translate: 0 0; transition-delay: calc(1s + var(--o) * .1s); }
+@media (prefers-reduced-motion: reduce) {
+  .tmap-reveal .tmap-line { stroke-dashoffset: 0; transition: none; }
+  .tmap-reveal .tmap-grid, .tmap-reveal .tmap-hub, .tmap-reveal .tmap-hub-pill, .tmap-reveal .tmap-pill,
+  .tmap-reveal .tmap-orb-pop, .tmap-reveal .tmap-label, .tmap-reveal .tmap-steps li { opacity: 1; filter: none; transform: none; translate: none; transition: none; }
+  .tmap-reveal .tmap-pulse { visibility: visible; }
+}

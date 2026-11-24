@@ -97,3 +97,25 @@
 }
 @media (max-width: 560px) { .fan-tilt { border-radius: 22px; } }
 .fan { perspective: 1500px; }
+
+/* ============ Появление веера (класс is-in, когда веер входит в экран) ============
+   --spread 0 → 1 раскладывает боковые карточки из-за центральной по их местам */
+@property --spread { syntax: '<number>'; inherits: true; initial-value: 1; }
+.fan-card {
+  transform:
+    translateX(calc(var(--k) * var(--step) * var(--sp-all)))
+    translateY(calc(var(--a) * var(--drop) * var(--sp-all)))
+    rotate(calc(var(--k) * var(--deg) * var(--sp-all)))
+    scale(calc(1 - var(--a) * 0.16 * var(--sp-all)));
+  /* раскрытие при входе (--spread, плавный переход) × сборка при уходе вверх (вслед за прокруткой, без задержки) */
+  --sp-all: calc(var(--spread) * (1 - var(--ex, 0)));
+  will-change: transform; /* карточки двигаются при прокрутке — держим их готовыми слоями */
+}
+.fan-reveal .fan-card.is-main { opacity: 0; translate: 0 120px; transition: opacity .7s ease, translate 1s cubic-bezier(.22, 1, .36, 1); }
+.fan-reveal .fan-card.is-hidden { --spread: 0; opacity: 0; transition: --spread 1.1s cubic-bezier(.22, 1, .36, 1), opacity .5s ease; }
+.fan-reveal.is-in .fan-card.is-main { opacity: 1; translate: 0 0; }
+.fan-reveal.is-in .fan-card.is-hidden { --spread: 1; opacity: calc(1 - var(--a) * 0.22); transition-delay: .55s; }
+.fan-reveal.is-in .fan-card.is-far { transition-delay: .65s; }
+@media (prefers-reduced-motion: reduce) {
+  .fan-reveal .fan-card.is-main, .fan-reveal .fan-card.is-hidden { opacity: 1; translate: none; --spread: 1; transition: none; }
+}

@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { asset } from '../router'
 import { SHINE } from './ui/shine'
 import './talent-map.css'
@@ -63,7 +63,7 @@ const wavePath = (() => {
 
 /* Сгусток энергии: тёмная стеклянная сфера со светящимся ободком, внутри вращаются цветные всполохи,
    в центре дышит белое ядро. Нарисован в радиусе 24 и масштабируется под нужный размер. */
-function EnergyOrb({ uid, x, y, r, color, delay = 0 }: { uid: string; x: number; y: number; r: number; color: string; delay?: number }) {
+function EnergyOrb({ uid, x, y, r, color, delay = 0, order = 0 }: { uid: string; x: number; y: number; r: number; color: string; delay?: number; order?: number }) {
   const anim = { animationDelay: `${delay}s` }
   const wisp = `url(#${uid}-wisp)`
   return (
@@ -92,6 +92,8 @@ function EnergyOrb({ uid, x, y, r, color, delay = 0 }: { uid: string; x: number;
         <filter id={`${uid}-blur`} x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="2" /></filter>
         <clipPath id={`${uid}-clip`}><circle r="23" /></clipPath>
       </defs>
+      {/* появление: шар «вспыхивает» из точки (см. tmap.is-in) */}
+      <g className="tmap-orb-pop" style={{ ['--o' as string]: order } as React.CSSProperties}>
       <circle r="48" fill={`url(#${uid}-halo)`} className="tmap-orb-halo" style={anim} />
       <circle r="24" fill="#15181b" />
       <circle r="24" fill={`url(#${uid}-body)`} />
@@ -111,6 +113,7 @@ function EnergyOrb({ uid, x, y, r, color, delay = 0 }: { uid: string; x: number;
       <circle r="9" fill={`url(#${uid}-core)`} className="tmap-core" style={anim} />
       <circle r="24" className="tmap-orb-rim" />
       <ellipse cx="-8" cy="-13" rx="7" ry="3.5" fill="#fff" opacity="0.22" transform="rotate(-30 -8 -13)" />
+      </g>
     </g>
   )
 }
@@ -223,36 +226,53 @@ function usePulses(root: React.RefObject<HTMLElement>) {
   }, [root])
 }
 
-export default function TalentMap() {
+/* withPath — показывать ли слева путь идеи (в «Игровой философии» — только карта) */
+export default function TalentMap({ withPath = true }: { withPath?: boolean }) {
   const root = useRef<HTMLDivElement>(null)
   usePulses(root)
+  // Появление схемы, когда она входит в экран: линии прорисовываются, центр проявляется,
+  // шары по очереди вспыхивают, затем подписи. Если схема снова ушла вниз за экран — повторится.
+  const [shown, setShown] = useState(false)
+  useEffect(() => {
+    const el = root.current
+    if (!el) return
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) { setShown(true); return }
+    const io = new IntersectionObserver(([e]) => {
+      if (e.isIntersecting) setShown(true)
+      else if (e.boundingClientRect.top > window.innerHeight) setShown(false)
+    }, { threshold: 0.2 })
+    io.observe(el)
+    return () => io.disconnect()
+  }, [])
   return (
-    <div className="tmap" ref={root}>
+    <div className={`tmap tmap-reveal${shown ? ' is-in' : ''}${withPath ? '' : ' is-map-only'}`} ref={root}>
       <h2 className="tmap-title">Карта талантов</h2>
       {/* Путь идеи */}
+      {withPath && (
       <div className="tmap-path">
         <span className="tmap-pill">Идея</span>
         <div className="tmap-wave" style={{ height: WAVE_H }}>
           <svg viewBox={`0 0 320 ${WAVE_H}`} width="320" height={WAVE_H} aria-hidden="true">
-            <path d={wavePath} className="tmap-line tmap-glow" />
+            <path d={wavePath} className="tmap-line tmap-glow" pathLength={1} />
             <defs><PulseGrad id="tm-pulse-wave" color={SHINE.mid} /></defs>
             <path d={wavePath} className="tmap-pulse" stroke="url(#tm-pulse-wave)"
               data-grad="tm-pulse-wave" data-size="120" data-travel="6" data-cycle="8"
               data-colors={['#bdffff', ...STEPS.map((x) => x.color)].join(',')}
               data-points={[`${XR},0`, ...STEPS.map((_, i) => `${ringX(i)},${ringY(i)}`)].join(';')} />
             {STEPS.map((s, i) => (
-              <EnergyOrb key={s.text} uid={`tw-${i}`} x={ringX(i)} y={ringY(i)} r={13} color={s.color} delay={i * -1.3} />
+              <EnergyOrb key={s.text} uid={`tw-${i}`} x={ringX(i)} y={ringY(i)} r={13} color={s.color} delay={i * -1.3} order={i} />
             ))}
           </svg>
           <ol className="tmap-steps">
             {STEPS.map((s, i) => (
-              <li key={s.text} className={i % 2 === 0 ? 'is-l' : 'is-r'} style={{ top: ringY(i), left: i % 2 === 0 ? XL + 26 : undefined, right: i % 2 === 0 ? undefined : 320 - XR + 26 }}>
+              <li key={s.text} className={i % 2 === 0 ? 'is-l' : 'is-r'} style={{ ['--o' as string]: i, top: ringY(i), left: i % 2 === 0 ? XL + 26 : undefined, right: i % 2 === 0 ? undefined : 320 - XR + 26 }}>
                 {s.text}
               </li>
             ))}
           </ol>
         </div>
       </div>
+      )}
 
       {/* Карта талантов */}
       <div className="tmap-map">
@@ -273,12 +293,12 @@ export default function TalentMap() {
               {[150, 300, 450].map((y) => <line key={`h${y}`} x1="90" y1={y} x2="770" y2={y} />)}
             </g>
             <g className="tmap-line tmap-glow">
-              <rect x="280" y="150" width="300" height="300" rx="56" />
-              <rect x="150" y="80" width="560" height="440" rx="72" />
-              <circle cx={HUB.x} cy={HUB.y} r="170" />
-              <path d={`M280,150 Q${HUB.x},${HUB.y} 580,450`} />
-              <path d={`M580,150 Q${HUB.x},${HUB.y} 280,450`} />
-              {NODES.map((n) => <path key={n.id} d={link(n)} />)}
+              <rect x="280" y="150" width="300" height="300" rx="56" pathLength={1} />
+              <rect x="150" y="80" width="560" height="440" rx="72" pathLength={1} />
+              <circle cx={HUB.x} cy={HUB.y} r="170" pathLength={1} />
+              <path d={`M280,150 Q${HUB.x},${HUB.y} 580,450`} pathLength={1} />
+              <path d={`M580,150 Q${HUB.x},${HUB.y} 280,450`} pathLength={1} />
+              {NODES.map((n) => <path key={n.id} d={link(n)} pathLength={1} />)}
             </g>
             {/* Импульсы от центра к узлам — цветом узла */}
             {NODES.map((n, i) => (
@@ -290,7 +310,7 @@ export default function TalentMap() {
             <circle cx={HUB.x} cy={HUB.y} r="120" fill="url(#tm-hub)" />
 
             {/* Узлы: сгустки энергии цветов исходной схемы */}
-            {NODES.map((n, i) => <EnergyOrb key={n.id} uid={`tm-${n.id}`} x={n.x} y={n.y} r={24} color={n.color} delay={i * -1.7} />)}
+            {NODES.map((n, i) => <EnergyOrb key={n.id} uid={`tm-${n.id}`} x={n.x} y={n.y} r={24} color={n.color} delay={i * -1.7} order={i} />)}
           </svg>
 
           {/* Центр: круг с логотипом и подпись «Идея» */}
@@ -302,6 +322,7 @@ export default function TalentMap() {
           {/* Подписи узлов */}
           {NODES.map((n) => (
             <div key={n.id} className={`tmap-label is-${n.side} is-${n.pos}`} style={{
+              ['--o' as string]: NODES.indexOf(n),
               /* Тултип над или под узлом, уголок указывает на шар */
               ...(n.pos === 'up'
                 ? { bottom: `${((H - n.y + 40) / H) * 100}%` }

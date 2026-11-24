@@ -23,10 +23,13 @@
   /* центр — на месте; боковые — сдвинуты, меньше, темнее и позади */
   /* боковые — повёрнуты к центру, отодвинуты вглубь, размыты и темнее */
   transform:
-    translateX(calc(var(--o) * var(--shift)))
-    translateZ(calc(var(--a) * -160px))
-    rotateY(calc(var(--o) * -38deg))
-    scale(calc(1 - var(--a) * 0.08));
+    translateX(calc(var(--o) * var(--shift) * var(--cc-all)))
+    translateZ(calc(var(--a) * -160px * var(--cc-all)))
+    rotateY(calc(var(--o) * -38deg * var(--cc-all)))
+    scale(calc(1 - var(--a) * 0.08 * var(--cc-all)));
+  /* раскрытие при входе (--cc-spread) × сборка за центральную при уходе вверх (--ex, вслед за прокруткой) */
+  --cc-all: calc(var(--cc-spread) * (1 - var(--ex, 0)));
+  will-change: transform;
   z-index: calc(10 - var(--a));
   filter: brightness(calc(1 - var(--a) * 0.4)) blur(calc(var(--a) * 3px));
   transition:
@@ -157,4 +160,24 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .cc-card, .cc-card > * { transition: none; }
+}
+
+/* ============ Появление карусели (класс is-in, когда она входит в экран) ============
+   --cc-spread 0 → 1 выводит соседние карточки из-за центральной на их места */
+@property --cc-spread { syntax: '<number>'; inherits: true; initial-value: 1; }
+.cc-reveal .cc-card.is-active { opacity: 0; translate: 0 120px; }
+.cc-reveal .cc-card:not(.is-active) { --cc-spread: 0; opacity: 0; }
+.cc-reveal .cc-nav { opacity: 0; transition: opacity .6s ease; }
+.cc-reveal .cc-arrow { opacity: 0; transition: opacity .6s ease, color .2s ease, transform .25s cubic-bezier(.22, 1, .36, 1); }
+.cc-reveal.is-in .cc-card { opacity: 1; translate: 0 0; --cc-spread: 1; }
+.cc-reveal .cc-card {
+  transition:
+    transform .6s cubic-bezier(.22, 1, .36, 1), filter .6s ease, background-color .6s ease,
+    opacity .7s ease, translate 1s cubic-bezier(.22, 1, .36, 1), --cc-spread 1.1s cubic-bezier(.22, 1, .36, 1);
+}
+.cc-reveal.is-in .cc-card:not(.is-active) { transition-delay: 0s, 0s, 0s, .55s, 0s, .55s; }
+.cc-reveal.is-in .cc-nav { opacity: 1; transition-delay: 1.2s; }
+.cc-reveal.is-in .cc-arrow { opacity: 1; transition-delay: 1.2s, 0s, 0s; }
+@media (prefers-reduced-motion: reduce) {
+  .cc-reveal .cc-card, .cc-reveal .cc-arrow, .cc-reveal .cc-nav { opacity: 1; translate: none; --cc-spread: 1; transition: none; }
 }

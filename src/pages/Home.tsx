@@ -1,4 +1,5 @@
-import type { ReactNode } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { letters, useLetterGradient, useScrollParts } from '../components/ui/letters'
 import { Link } from '../router'
 import { CHARACTERS, HERO, LINKS, ROLE_CARD, ROLE_TABLE, TERMS } from '../content'
 import { Arrow, ArrowDown } from '../components/Icons'
@@ -7,8 +8,8 @@ import HeroDots from '../components/HeroDots'
 import RoleFan from '../components/RoleFan'
 import FormatsTabs from '../components/FormatsTabs'
 import CasesCarousel, { type CaseCard } from '../components/CasesCarousel'
-import { SolarIcon } from '../components/ui/SolarIcon'
 import { TiltCard } from '../components/ui/TiltCard'
+import TalentMap from '../components/TalentMap'
 
 /** Заголовок секции: название блока над заголовком. `n` — порядковый номер, на странице не показывается */
 function SecHead({ label, title, sub }: { n?: string; label: string; title: ReactNode; sub?: ReactNode }) {
@@ -22,18 +23,50 @@ function SecHead({ label, title, sub }: { n?: string; label: string; title: Reac
 }
 
 /* ---------------- 01 Hero ---------------- */
+/* Прогресс прокрутки первого экрана (0 → 1) — в CSS-переменную --hp:
+   слои hero уходят с разной скоростью и мягко гаснут */
+function useHeroScroll(ref: React.RefObject<HTMLElement>) {
+  useEffect(() => {
+    const el = ref.current
+    if (!el || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    let raf = 0
+    const update = () => {
+      raf = 0
+      const h = el.offsetHeight || 1
+      const p = Math.min(1, Math.max(0, window.scrollY / h))
+      el.style.setProperty('--hp', p.toFixed(4))
+    }
+    const on = () => { if (!raf) raf = requestAnimationFrame(update) }
+    update()
+    window.addEventListener('scroll', on, { passive: true })
+    window.addEventListener('resize', on)
+    return () => { cancelAnimationFrame(raf); window.removeEventListener('scroll', on); window.removeEventListener('resize', on) }
+  }, [ref])
+}
+
+const TITLE_START = HERO.title.reduce<number[]>((acc, _l, i) => {
+  acc.push(i === 0 ? 0 : acc[i - 1] + HERO.title[i - 1].replace(/\s/g, '').length)
+  return acc
+}, [])
+
 function Hero() {
+  const ref = useRef<HTMLElement>(null)
+  useHeroScroll(ref)
+  useLetterGradient(ref)
   return (
-    <section className="hero" id="top">
+    <section className="hero hero-anim" id="top" ref={ref}>
       <HeroDots accent />
       <div className="wrap hero-center">
         <div className="hero-text">
-          <h1>
+          <h1 aria-label={HERO.title.join(' ')}>
             {HERO.title.map((l, i) => (
-              <span key={i}>{i === 1 ? <span className="gt">{l}</span> : l}</span>
+              <span key={i} className="ha-line" aria-hidden="true">
+                {i === 1 ? <span className="gt">{letters(l, TITLE_START[i])}</span> : letters(l, TITLE_START[i])}
+              </span>
             ))}
           </h1>
-          <p className="hero-lead">{HERO.lead}</p>
+          {/* Подзаголовок — тем же эффектом по буквам, одновременно с заголовком */}
+          <p className="hero-lead" aria-label={HERO.lead}><span aria-hidden="true">{letters(HERO.lead, 0)}</span></p>
           <div className="hero-actions">
             <span className="btn-wow">
               <Link to="/#ecosystem" className="btn btn-primary">
@@ -43,8 +76,8 @@ function Hero() {
             <Link to="/#contacts" className="btn btn-ghost">Обсудить задачу</Link>
           </div>
           <div className="hero-terms">
-            {TERMS.map((t) => (
-              <div key={t.term}>
+            {TERMS.map((t, i) => (
+              <div key={t.term} style={{ ['--i' as string]: i }}>
                 <b>{t.term}</b>
                 <p>{t.def}</p>
               </div>
@@ -58,19 +91,31 @@ function Hero() {
 
 /* ---------------- 02 Ecosystem tree ---------------- */
 function Ecosystem() {
+  const ref = useRef<HTMLElement>(null)
+  useScrollParts(ref)
+  useLetterGradient(ref)
+  const t1 = 'Одна основа —'
+  const t2 = 'три направления'
+  const sub = 'Направления не нужно проходить по порядку: каждое самостоятельно и открыто для своей задачи — личной, командной или партнёрской.'
+  const n1 = t1.replace(/\s/g, '').length
   return (
-    <section className="section" id="ecosystem">
+    <section className="section" id="ecosystem" ref={ref}>
       <div className="wrap">
-        <SecHead
-          n="02"
-          label="Экосистема"
-          title={<>Одна основа — <span className="gt">три направления</span></>}
-          sub="Направления не нужно проходить по порядку: каждое самостоятельно и открыто для своей задачи — личной, командной или партнёрской."
-        />
+        {/* Заголовок и текст по буквам: появляются при входе секции и уходят при прокрутке дальше */}
+        <div className="sec-head">
+          <span className="sec-label mono">Экосистема</span>
+          <h2 className="sl" data-sp aria-label={`${t1} ${t2}`} style={{ ['--n' as string]: n1 + t2.replace(/\s/g, '').length }}>
+            <span aria-hidden="true">{letters(t1, 0)} <span className="gt">{letters(t2, n1)}</span></span>
+          </h2>
+          <p className="sub sl" data-sp aria-label={sub} style={{ ['--n' as string]: sub.replace(/\s/g, '').length }}>
+            <span aria-hidden="true">{letters(sub, 0)}</span>
+          </p>
+        </div>
 
         <EcosystemBeams />
 
-        <div className="jumps">
+        {/* Переходы: при уходе вверх разлетаются в стороны и гаснут */}
+        <div className="jumps" data-sp>
           <Link to="/#format-mentor" className="jump">
             <div><span className="mono">для себя</span><b>Личный формат</b></div>
             <span className="go"><Arrow /></span>
@@ -150,7 +195,7 @@ function RoleCharacter() {
 /* Блок «Приглашение брендам» — в конце секции философии */
 function Brands() {
   return (
-    <div className="brands" id="brands">
+    <div className="brands sp-rise" id="brands" data-sp>
       <div>
         <h3>Брендам, которым близки идеи персонажа и состояния</h3>
         <p className="muted">Если ваш продукт помогает человеку чувствовать себя в своём образе, давайте обсудим, какой может быть коллаборация.</p>
@@ -168,30 +213,60 @@ function Brands() {
    Под заголовком — три принципа карточками.
    Бренды — в той же секции, сразу под принципами. */
 const PRINCIPLES = [
-  { icon: 'crown', title: 'Персонаж', text: 'Игровой образ для личной работы. Через него легче пробовать действовать своей сильной стороной.' },
-  { icon: 'pulse', title: 'Состояние', text: 'То, с чем вы входите в день. Его можно замечать и настраивать — не ждать, что оно изменится само.' },
-  { icon: 'route', title: 'Выбор хода', text: 'Каждый день есть несколько вариантов действий. Игра помогает выбирать осознанно и замечать результат.' },
+  { title: 'Персонаж', text: 'Игровой образ для личной работы. Через него легче пробовать действовать своей сильной стороной.' },
+  { title: 'Состояние', text: 'То, с чем вы входите в день. Его можно замечать и настраивать — не ждать, что оно изменится само.' },
+  { title: 'Выбор хода', text: 'Каждый день есть несколько вариантов действий. Игра помогает выбирать осознанно и замечать результат.' },
 ] as const
 
+const SHIFTS = [
+  { from: 'от «я»', to: 'к «мы»' },
+  { from: 'от должностей', to: 'к природным ролям' },
+  { from: 'от универсальных решений', to: 'к персонализации' },
+  { from: 'от жёсткой иерархии', to: 'к живым системам и партнёрствам' },
+]
+
+const PA_TITLE = 'В центре — идея. Вокруг — шесть ролей'
+const PA_NOTE = 'Когда каждый берёт на себя ту часть работы, в которой силён, команда может провести идею от замысла до масштаба'
+const nChars = (t: string) => t.replace(/\s/g, '').length
+
 function PhilosophyAir() {
+  const ref = useRef<HTMLElement>(null)
+  useScrollParts(ref)
   return (
     <>
-      <section className="section philo-air" id="philosophy">
+      <section className="section philo-air" id="philosophy" ref={ref}>
         <div className="wrap">
           <div className="pa-head">
             <span className="sec-label mono">Игровая философия</span>
-            <h2>Смотреть на жизнь как на игру</h2>
+            {/* Заголовок и подпись под картой — по буквам, вслед за прокруткой */}
+            <h2 className="sl" data-sp aria-label={PA_TITLE} style={{ ['--n' as string]: nChars(PA_TITLE) }}>
+              <span aria-hidden="true">{letters(PA_TITLE, 0)}</span>
+            </h2>
+          </div>
+          {/* Карта талантов — та же, что на странице расчёта, но без пути идеи */}
+          <div className="pa-map">
+            <TalentMap withPath={false} />
+            <p className="pa-map-note sl" data-sp aria-label={PA_NOTE} style={{ ['--n' as string]: nChars(PA_NOTE) }}>
+              <span aria-hidden="true">{letters(PA_NOTE, 0)}</span>
+            </p>
+            {/* Сдвиги: от старого (зачёркнуто) к новому */}
+            {/* Сдвиги и карточки — поднимаются снизу по очереди, вслед за прокруткой */}
+            <div className="pa-shifts sp-stagger" data-sp>
+              {SHIFTS.map((x, i) => (
+                <div className="pa-shift" key={x.to} style={{ ['--i' as string]: i }}>
+                  <s>{x.from}</s>
+                  <b>{x.to}</b>
+                </div>
+              ))}
+            </div>
           </div>
           {/* Три принципа — карточками в ряд */}
-          <div className="pa-principles">
-            {PRINCIPLES.map((x) => (
-              <TiltCard className="pa-item" key={x.title}>
+          <div className="pa-principles sp-stagger" data-sp>
+            {PRINCIPLES.map((x, i) => (
+              <TiltCard className="pa-item" key={x.title} style={{ ['--i' as string]: i }}>
                 {/* Текст поверх живого градиента; карточка наклоняется за курсором */}
                 <div className="pa-panel">
-                  <div className="pa-top">
-                    <h4>{x.title}</h4>
-                    <SolarIcon name={x.icon} size={28} className="pa-top-ico" />
-                  </div>
+                  <h4>{x.title}</h4>
                   <p>{x.text}</p>
                 </div>
                 <div className="pa-glow" aria-hidden="true" />
@@ -240,12 +315,18 @@ const CASE_CARDS: CaseCard[] = [
   },
 ]
 
+const CASES_TITLE = 'Примеры и отзывы'
+
 function Cases() {
+  const ref = useRef<HTMLElement>(null)
+  useScrollParts(ref)
   return (
-    <section className="section" id="cases">
+    <section className="section" id="cases" ref={ref}>
       <div className="wrap">
         <div className="sec-head">
-          <h2>Примеры и отзывы</h2>
+          <h2 className="sl" data-sp aria-label={CASES_TITLE} style={{ ['--n' as string]: nChars(CASES_TITLE) }}>
+            <span aria-hidden="true">{letters(CASES_TITLE, 0)}</span>
+          </h2>
         </div>
         <CasesCarousel items={CASE_CARDS} />
       </div>
@@ -255,16 +336,38 @@ function Cases() {
 
 /* ---------------- 07 About ----------------
    Данные — из вайрфрейма: автор Юлия Дмитриева, создатель SoulVibe.
-   Фото и биография — заглушки до согласованных материалов. */
+   Биография и методология — тексты заказчика; фото — заглушка. */
+const ABOUT_TITLE = 'Кто стоит за SoulVibe'
+const ABOUT_QUOTE = 'Я верю, что человек раскрывается через понимание своей природы, состояние игры и осознанное взаимодействие с технологиями.'
+
 function About() {
+  const ref = useRef<HTMLElement>(null)
+  const block = useRef<HTMLDivElement>(null)
+  useScrollParts(ref)
+  // Появление блока: фото раскрывается снизу вверх, справа по очереди — имя, роль, регалии, цитата
+  // (по буквам), методология и строка о команде. Если блок снова ушёл вниз за экран — повторится.
+  const [shown, setShown] = useState(false)
+  useEffect(() => {
+    const el = block.current
+    if (!el) return
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) { setShown(true); return }
+    const io = new IntersectionObserver(([e]) => {
+      if (e.isIntersecting) setShown(true)
+      else if (e.boundingClientRect.top > window.innerHeight) setShown(false)
+    }, { threshold: 0.35 })
+    io.observe(el)
+    return () => io.disconnect()
+  }, [])
   return (
-    <section className="section" id="about">
+    <section className="section" id="about" ref={ref}>
       <div className="wrap">
         <div className="sec-head">
           <span className="sec-label mono">О проекте</span>
-          <h2>Кто стоит за SoulVibe</h2>
+          <h2 className="sl" data-sp aria-label={ABOUT_TITLE} style={{ ['--n' as string]: nChars(ABOUT_TITLE) }}>
+            <span aria-hidden="true">{letters(ABOUT_TITLE, 0)}</span>
+          </h2>
         </div>
-        <div className="about">
+        <div className={`about about-reveal${shown ? ' is-in' : ''}`} ref={block}>
           {/* Наклон за курсором — как у карточек «Игровой философии» */}
           <TiltCard className="author-photo">
             <span role="img" aria-label="Фотография автора — будет предоставлена">Фотография автора</span>
@@ -274,7 +377,18 @@ function About() {
               <h3>Юлия Дмитриева</h3>
               <span className="about-role">Создатель SoulVibe</span>
             </div>
-            <div className="about-bio">Место для согласованной краткой биографии и описания опыта</div>
+            {/* Биография: регалии и личное убеждение */}
+            <p className="about-creds">Coach ICI, магистратура по психологии, исследования сознания в МГУ.</p>
+            {/* Цитата: обычные кавычки, приглушённые */}
+            <blockquote className="about-quote" aria-label={`«${ABOUT_QUOTE}»`} style={{ ['--n' as string]: nChars(ABOUT_QUOTE) }}>
+              <span aria-hidden="true"><span className="q">«</span>{letters(ABOUT_QUOTE, 0)}<span className="q">»</span></span>
+            </blockquote>
+            {/* На чём основана методология */}
+            <div className="about-method">
+              <h4>На чём основана методология SoulVibe</h4>
+              <p>Создавая SoulVibe, я объединила свой интерес к исследованиям сознания с изучением архетипов Юнга, «Книги перемен» и Human Design. В работе с человеком я использую ИИ, чтобы подбирать практики с учётом его сильных сторон.</p>
+              <p>В моей методологии роль описывает вклад человека в команду, а персонаж помогает исследовать тот же талант в повседневной жизни. Через игровые задания человек пробует новые действия и замечает, что меняется.</p>
+            </div>
             <p className="about-team">Корпоративные программы проводят сотрудники команды SoulVibe.</p>
           </div>
         </div>
@@ -286,14 +400,35 @@ function About() {
 /* ---------------- 08 Contacts ----------------
    По ТЗ: «Напишите нам…» и две кнопки — Telegram и email; клик не отправляет сообщение сам.
    Адреса — заглушки из LINKS до получения настоящих. */
+const CONTACTS_TITLE = 'Напишите нам'
+
 function Contacts() {
   const telegramLabel = LINKS.telegram.replace(/^https?:\/\//, '')
+  const ref = useRef<HTMLElement>(null)
+  const card = useRef<HTMLDivElement>(null)
+  useScrollParts(ref)
+  // Появление: заголовок по буквам вслед за прокруткой; ссылки по очереди выезжают справа,
+  // круги со стрелкой «выскакивают». Если блок снова ушёл вниз за экран — повторится.
+  const [shown, setShown] = useState(false)
+  useEffect(() => {
+    const el = card.current
+    if (!el) return
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) { setShown(true); return }
+    const io = new IntersectionObserver(([e]) => {
+      if (e.isIntersecting) setShown(true)
+      else if (e.boundingClientRect.top > window.innerHeight) setShown(false)
+    }, { threshold: 0.3 })
+    io.observe(el)
+    return () => io.disconnect()
+  }, [])
   return (
-    <section className="section" id="contacts">
+    <section className="section" id="contacts" ref={ref}>
       <div className="wrap">
-      <div className="contacts-card">
+      <div className={`contacts-card contacts-reveal${shown ? ' is-in' : ''}`} ref={card}>
         <div className="contacts-head">
-          <h2>Напишите нам</h2>
+          <h2 className="sl" data-sp aria-label={CONTACTS_TITLE} style={{ ['--n' as string]: nChars(CONTACTS_TITLE) }}>
+            <span aria-hidden="true">{letters(CONTACTS_TITLE, 0)}</span>
+          </h2>
         </div>
         <div className="contacts-links">
           <a href={LINKS.telegram} target="_blank" rel="noreferrer" className="contact-link">
@@ -301,14 +436,14 @@ function Contacts() {
               <b>Написать в Telegram</b>
               <small>{telegramLabel}</small>
             </span>
-            <span className="go"><Arrow size={18} /></span>
+            <span className="go"><Arrow /></span>
           </a>
           <a href={LINKS.email} className="contact-link">
             <span>
               <b>Написать по электронной почте</b>
               <small>{LINKS.emailLabel}</small>
             </span>
-            <span className="go"><Arrow size={18} /></span>
+            <span className="go"><Arrow /></span>
           </a>
         </div>
       </div>

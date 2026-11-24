@@ -110,6 +110,22 @@ export default function EcosystemBeams() {
   const g3 = useRef<HTMLDivElement>(null)
   const { w, h, paths } = useBeamPaths(container, hub, [g1, g2, g3], [n1, n2, n3, n4, n5])
 
+  // Появление схемы: когда она входит в экран — класс is-in (центр проявляется, линии прорисовываются,
+  // затем направления и блоки). Если схема снова целиком ушла вниз за экран — класс снимается,
+  // и при следующем входе появление повторится. Сдвигов (transform) нет: они сбили бы расчёт линий.
+  const [shown, setShown] = useState(false)
+  useEffect(() => {
+    const el = container.current
+    if (!el) return
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) { setShown(true); return }
+    const io = new IntersectionObserver(([e]) => {
+      if (e.isIntersecting) setShown(true)
+      else if (e.boundingClientRect.top > window.innerHeight) setShown(false)
+    }, { threshold: 0.2 })
+    io.observe(el)
+    return () => io.disconnect()
+  }, [])
+
   const svgRef = useRef<SVGSVGElement>(null)
   const nodeRefs = [n1, n2, n3, n4, n5]
 
@@ -195,7 +211,7 @@ export default function EcosystemBeams() {
 
   return (
     <div
-      className="beams"
+      className={`beams beams-reveal${shown ? ' is-in' : ''}`}
       ref={container}
       role="img"
       aria-label="Схема экосистемы SoulVibe: общая основа — методология и игровая философия; направления — личный путь, идеи и команды, развитие экосистемы"
@@ -215,7 +231,7 @@ export default function EcosystemBeams() {
             </linearGradient>
           ))}
         </defs>
-        <g className="beam-glow">{paths.map((d, i) => <path key={i} d={d} className="beam-base" />)}</g>
+        <g className="beam-glow">{paths.map((d, i) => <path key={i} d={d} className="beam-base" pathLength={1} />)}</g>
         {paths.map((d, i) => d && (
           <path key={`p${i}`} d={d} className="beam-pulse" stroke={`url(#beam-pulse-grad-${i})`} />
         ))}
