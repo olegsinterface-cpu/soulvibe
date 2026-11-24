@@ -167,7 +167,7 @@ export default function FormatsTabs() {
                   <div className="ft-chat is-live">
                     {DIALOG.slice(0, msgCount).map((m, i) => (
                       // обёртка раскрывается по высоте снизу — прошлые сообщения плавно поднимаются
-                      <div key={i} className="ft-msg-wrap"><div className="ft-msg-in">
+                      <GrowWrap key={i}><div className="ft-msg-in">
                       <div className={`ft-msg ${m.from}`}>
                         <span className="ft-avatar" aria-hidden="true">
                           {m.from === 'user'
@@ -176,7 +176,7 @@ export default function FormatsTabs() {
                         </span>
                         <p className={`ft-bubble ${m.from}`}>{m.text}</p>
                       </div>
-                      </div></div>
+                      </div></GrowWrap>
                     ))}
                   </div>
                 </div>
@@ -218,4 +218,23 @@ function useInView(ref: React.RefObject<HTMLElement>, threshold: number, rootMar
     return () => io.disconnect()
   }, [ref, threshold, rootMargin])
   return inView
+}
+
+/** Новое сообщение в чате: место под него плавно раскрывается по высоте, соседние сообщения сдвигаются без рывков.
+ *  Высота считается от реального размера, а отрицательные поля обёртки (запас под свечение аватара) растут вместе с ней,
+ *  поэтому в первый кадр сообщение занимает ровно 0 px. */
+function GrowWrap({ children }: { children: React.ReactNode }) {
+  const el = useRef<HTMLDivElement>(null)
+  useLayoutEffect(() => {
+    const w = el.current
+    if (!w || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    const h = w.offsetHeight
+    const m = getComputedStyle(w).marginTop
+    const a = w.animate(
+      [{ height: '0px', marginTop: '0px', marginBottom: '0px' }, { height: `${h}px`, marginTop: m, marginBottom: m }],
+      { duration: 450, easing: 'cubic-bezier(.22, 1, .36, 1)' },
+    )
+    return () => a.cancel()
+  }, [])
+  return <div ref={el} className="ft-msg-wrap">{children}</div>
 }

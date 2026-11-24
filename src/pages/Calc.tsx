@@ -5,13 +5,17 @@ import { LINKS } from '../content'
 import { Arrow } from '../components/Icons'
 import TalentMap from '../components/TalentMap'
 import { letters } from '../components/ui/letters'
+import CityField from '../components/CityField'
+import type { City } from '../lib/cities'
 
-type Values = { birth: string; email: string; tg: string; consent: boolean }
+type Sex = '' | 'f' | 'm'
+// city — текст в поле, cityPick — город, выбранный из подсказок (его данные и уходят в расчёт)
+type Values = { sex: Sex; name: string; birth: string; time: string; noTime: boolean; city: string; cityPick: City | null; consent: boolean }
 type Errors = Partial<Record<keyof Values, string>>
 type Status = 'input' | 'loading' | 'unavailable'
 type Outcome = 'success' | 'unavailable'
 
-const EMPTY: Values = { birth: '', email: '', tg: '', consent: false }
+const EMPTY: Values = { sex: '', name: '', birth: '', time: '', noTime: false, city: '', cityPick: null, consent: false }
 
 function maskDate(raw: string) {
   const d = raw.replace(/\D/g, '').slice(0, 8)
@@ -20,8 +24,15 @@ function maskDate(raw: string) {
   return `${d.slice(0, 2)}.${d.slice(2, 4)}.${d.slice(4)}`
 }
 
+function maskTime(raw: string) {
+  const d = raw.replace(/\D/g, '').slice(0, 4)
+  return d.length <= 2 ? d : `${d.slice(0, 2)}:${d.slice(2)}`
+}
+
 function validate(v: Values): Errors {
   const e: Errors = {}
+  if (!v.sex) e.sex = 'Выберите пол'
+  if (!v.name.trim()) e.name = 'Укажите имя'
   const m = v.birth.match(/^(\d{2})\.(\d{2})\.(\d{4})$/)
   if (!v.birth) e.birth = 'Укажите дату рождения'
   else if (!m) e.birth = 'Проверьте дату: нужен формат ДД.ММ.ГГГГ'
@@ -32,10 +43,13 @@ function validate(v: Values): Errors {
     if (!real) e.birth = 'Такой даты нет — проверьте день и месяц'
     else if (y < 1900 || dt > new Date()) e.birth = 'Проверьте год рождения'
   }
-  if (!v.email) e.email = 'Укажите email'
-  else if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v.email)) e.email = 'Введите email в формате name@example.com'
-  if (!v.tg) e.tg = 'Укажите Telegram'
-  else if (!/^@[A-Za-z0-9_]{5,32}$/.test(v.tg)) e.tg = 'Укажите Telegram в формате @username (от 5 символов: латиница, цифры, _)'
+  // время — по желанию; если указано, проверяем формат
+  if (!v.noTime && v.time) {
+    const t = v.time.match(/^(\d{2}):(\d{2})$/)
+    if (!t || +t[1] > 23 || +t[2] > 59) e.time = 'Проверьте время: нужен формат ЧЧ:ММ, например 08:30'
+  }
+  if (!v.city.trim()) e.city = 'Укажите город рождения'
+  else if (!v.cityPick) e.city = 'Выберите город из подсказок'
   if (!v.consent) e.consent = 'Без согласия на обработку данных отправить форму нельзя'
   return e
 }
@@ -68,7 +82,7 @@ export default function Calc() {
     const e = validate(values)
     setErrors(e)
     if (Object.keys(e).length) {
-      const first = document.querySelector<HTMLElement>(`[name="${Object.keys(e)[0]}"]`)
+      const first = document.querySelector<HTMLElement>(`[name="${Object.keys(e)[0]}"]:not(:disabled)`)
       first?.focus()
       return
     }
@@ -86,14 +100,15 @@ export default function Calc() {
     run(v, outcome)
   }
 
-  const sample: Values = { birth: '14.03.1990', email: 'name@example.com', tg: '@username', consent: true }
+  const SAMPLE_CITY: City = { id: 'mock-moscow', name: 'Москва', country: 'Россия', lat: 55.7558, lng: 37.6173, timezone: 'Europe/Moscow' }
+  const sample: Values = { sex: 'f', name: 'Анна', birth: '14.03.1990', time: '08:30', noTime: false, city: 'Москва', cityPick: SAMPLE_CITY, consent: true }
 
   const applyPreset = (key: string) => {
     window.clearTimeout(timer.current)
     setPreset(key)
     if (key === 'input') { setV(EMPTY); setErrors({}); setStatus('input'); setOutcome('success') }
     if (key === 'errors') {
-      const bad = { birth: '31.02.19', email: 'name@', tg: 'username', consent: false }
+      const bad: Values = { sex: '', name: '', birth: '31.02.19', time: '25:70', noTime: false, city: 'Мск', cityPick: null, consent: false }
       setV(bad); setErrors(validate(bad)); setStatus('input')
     }
     if (key === 'loading') { setV(sample); setErrors({}); setStatus('loading') }
@@ -124,7 +139,7 @@ export default function Calc() {
 
         <div className="form-card">
           <h2>Ваши данные для расчёта</h2>
-          <p className="hint">Все поля обязательны.</p>
+          <p className="hint">Все поля, кроме времени рождения, обязательны.</p>
 
           {status === 'unavailable' && (
             <div className="alert" role="alert">
@@ -141,6 +156,34 @@ export default function Calc() {
           )}
 
           <form className="form" onSubmit={onSubmit} noValidate>
+            {/* Пол — переключатель из двух вариантов, бегунок встаёт под выбранный */}
+            <div className="field">
+              <div
+                className={`sex-seg${v.sex ? ` is-${v.sex}` : ''}`} role="radiogroup" aria-label="Пол"
+                aria-invalid={!!errors.sex} aria-describedby={errors.sex ? 'sex-err' : undefined}
+              >
+                <span className="sex-seg-thumb" aria-hidden="true" />
+                {([['f', 'Женский'], ['m', 'Мужской']] as const).map(([val, label]) => (
+                  <label key={val} className="sex-seg-opt">
+                    <input type="radio" name="sex" value={val} checked={v.sex === val} disabled={busy} onChange={() => set('sex', val)} />
+                    <span>{label}</span>
+                  </label>
+                ))}
+              </div>
+              {errors.sex && <p className="err" id="sex-err">{errors.sex}</p>}
+            </div>
+            <div className="field">
+              <div className="float">
+                <input
+                  id="name" name="name" className="input" autoComplete="given-name"
+                  placeholder="Имя" value={v.name} disabled={busy}
+                  aria-invalid={!!errors.name} aria-describedby={errors.name ? 'name-err' : undefined}
+                  onChange={(e) => set('name', e.target.value)}
+                />
+                <label htmlFor="name">Имя<em>*</em></label>
+              </div>
+              {errors.name && <p className="err" id="name-err">{errors.name}</p>}
+            </div>
             <div className="field">
               <div className="float">
                 <input
@@ -153,46 +196,35 @@ export default function Calc() {
               </div>
               {errors.birth && <p className="err" id="birth-err">{errors.birth}</p>}
             </div>
+            {/* Время — по желанию; справа кнопка-галочка «Не знаю» отключает поле */}
             <div className="field">
-              <div className="float">
-                <input
-                  id="email" name="email" type="email" className="input" autoComplete="email"
-                  placeholder="name@example.com" value={v.email} disabled={busy}
-                  aria-invalid={!!errors.email} aria-describedby={errors.email ? 'email-err' : undefined}
-                  onChange={(e) => set('email', e.target.value.trim())}
-                />
-                <label htmlFor="email">Email<em>*</em></label>
+              <div className="time-row">
+                <div className="float">
+                  <input
+                    id="time" name="time" className="input" inputMode="numeric" autoComplete="off"
+                    placeholder="ЧЧ:ММ" value={v.noTime ? '' : v.time} disabled={busy || v.noTime}
+                    aria-invalid={!!errors.time} aria-describedby={errors.time ? 'time-err' : undefined}
+                    onChange={(e) => set('time', maskTime(e.target.value))}
+                  />
+                  <label htmlFor="time">Время рождения</label>
+                </div>
+                <label className={`chip-check${v.noTime ? ' is-on' : ''}`}>
+                  <input
+                    type="checkbox" name="noTime" checked={v.noTime} disabled={busy}
+                    onChange={(e) => { set('noTime', e.target.checked); if (e.target.checked) setErrors((p) => ({ ...p, time: undefined })) }}
+                  />
+                  <svg className="chip-tick" width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                  Не знаю
+                </label>
               </div>
-              {errors.email && <p className="err" id="email-err">{errors.email}</p>}
+              {errors.time && <p className="err" id="time-err">{errors.time}</p>}
             </div>
-            <div className="field">
-              <div className="float">
-                <input
-                  id="tg" name="tg" className="input" autoComplete="off" autoCapitalize="none"
-                  placeholder="@username" value={v.tg} disabled={busy}
-                  aria-invalid={!!errors.tg} aria-describedby={errors.tg ? 'tg-err' : undefined}
-                  onChange={(e) => set('tg', e.target.value.trim())}
-                />
-                <label htmlFor="tg">Telegram<em>*</em></label>
-              </div>
-              {errors.tg && <p className="err" id="tg-err">{errors.tg}</p>}
-            </div>
-
-            {/* Пояснение — тултипом при наведении или фокусе (на телефоне — по нажатию) */}
-            <div className="why">
-              <button type="button" className="why-trigger" aria-describedby="why-tip">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                  <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.6" />
-                  <path d="M12 11v5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-                  <circle cx="12" cy="8" r="1" fill="currentColor" />
-                </svg>
-                Зачем нужны контакты?
-              </button>
-              <span className="why-tip" id="why-tip" role="tooltip">
-                Мы сохраняем email и Telegram вместе с результатом расчёта и можем написать вам о форматах SoulVibe. Подробнее — в документе об обработке персональных данных.
-                {/* TODO: формулировка по фактической обработке данных — согласовать с юристом */}
-              </span>
-            </div>
+            {/* Город — с подсказками (сейчас тестовый список, разработчики подключат GeoNames: см. lib/cities.ts) */}
+            <CityField
+              value={v.city} picked={v.cityPick} error={errors.city} disabled={busy}
+              onChange={(t) => set('city', t)}
+              onPick={(c) => set('cityPick', c)}
+            />
 
             <div className="field">
               <label className="check" htmlFor="consent" style={{ fontWeight: 400, marginBottom: 0 }}>

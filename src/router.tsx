@@ -28,7 +28,13 @@ export function navigate(to: string) {
 export function scrollToHash(id: string) {
   requestAnimationFrame(() => {
     const el = document.getElementById(id)
-    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    if (!el) return
+    // секция начинается с большого внутреннего отступа сверху — пропускаем его, чтобы содержимое
+    // встало сразу под шапкой (с небольшим воздухом), а не ниже пустой полосы
+    const header = document.querySelector('.header')?.getBoundingClientRect().height ?? 72
+    const pad = parseFloat(getComputedStyle(el).paddingTop) || 0
+    const top = el.getBoundingClientRect().top + window.scrollY + pad - header - 32
+    window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' })
   })
 }
 

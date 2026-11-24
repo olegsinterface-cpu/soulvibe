@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { letters, useLetterGradient, useScrollParts } from '../components/ui/letters'
-import { Link } from '../router'
+import { Link, asset } from '../router'
 import { CHARACTERS, HERO, LINKS, ROLE_CARD, ROLE_TABLE, TERMS } from '../content'
 import { Arrow, ArrowDown } from '../components/Icons'
 import EcosystemBeams from '../components/EcosystemBeams'
@@ -354,10 +354,14 @@ function About() {
     const io = new IntersectionObserver(([e]) => {
       if (e.isIntersecting) setShown(true)
       else if (e.boundingClientRect.top > window.innerHeight) setShown(false)
-    }, { threshold: 0.35 })
+    }, { rootMargin: '0px 0px -20% 0px' }) // старт, когда верх блока поднялся на пятую часть экрана — фото ещё в кадре
     io.observe(el)
     return () => io.disconnect()
   }, [])
+  // фото проявляется только после загрузки — иначе оно «выскакивает», догрузившись посреди анимации
+  const photo = useRef<HTMLImageElement>(null)
+  const [photoReady, setPhotoReady] = useState(false)
+  useEffect(() => { if (photo.current?.complete) setPhotoReady(true) }, [])
   return (
     <section className="section" id="about" ref={ref}>
       <div className="wrap">
@@ -369,8 +373,8 @@ function About() {
         </div>
         <div className={`about about-reveal${shown ? ' is-in' : ''}`} ref={block}>
           {/* Наклон за курсором — как у карточек «Игровой философии» */}
-          <TiltCard className="author-photo">
-            <span role="img" aria-label="Фотография автора — будет предоставлена">Фотография автора</span>
+          <TiltCard className={`author-photo${photoReady ? ' is-loaded' : ''}`}>
+            <img ref={photo} src={asset('/author.jpg')} alt="Юлия Дмитриева, создатель SoulVibe" width="1166" height="1400" decoding="async" onLoad={() => setPhotoReady(true)} />
           </TiltCard>
           <div className="about-body">
             <div className="about-person">

@@ -219,8 +219,7 @@
 @keyframes ft-pop { from { opacity: 0; transform: translateY(14px) scale(.97); } to { opacity: 1; transform: none; } }
 .ft-reveal .ft-visual:not(.is-in) .ft-steps li { opacity: 0; }
 /* Новое сообщение: место под него раскрывается снизу (прошлые поднимаются), само сообщение всплывает */
-@keyframes ft-grow { from { grid-template-rows: 0fr; } to { grid-template-rows: 1fr; } }
-.is-live .ft-msg-wrap { animation: ft-grow .45s cubic-bezier(.22, 1, .36, 1); }
+/* раскрытие по высоте — в компоненте GrowWrap (Web Animations), здесь только всплытие сообщения */
 .is-live .ft-msg { animation: ft-pop .5s cubic-bezier(.22, 1, .36, 1) .06s backwards; }
 /* Шаги: линия прорисовывается сверху вниз, точки по очереди «загораются», текст выезжает слева */
 .ft-reveal .ft-visual.is-in .ft-steps::before { animation: ft-line 1.2s cubic-bezier(.65, 0, .35, 1) .45s backwards; transform-origin: top; }
