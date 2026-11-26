@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react'
-import { Link, asset } from '../router'
-import { ROLE_FAN } from '../content'
-import { Arrow } from './Icons'
-import { TiltCard } from './ui/TiltCard'
-import { letters, useScrollParts } from './ui/letters'
+import { Link, asset } from '../../router'
+import { ROLE_FAN } from '../../content'
+import { Arrow } from '../ui/Icons'
+import { TiltCard } from '../ui/TiltCard'
+import { letters, useScrollParts } from '../ui/letters'
 import './role-fan.css'
 
 /* Альтернативный вариант секции «Роль и персонаж»:

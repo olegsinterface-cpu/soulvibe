@@ -1,6 +1,12 @@
 /* Три принципа «Игровой философии» — иллюстрации и смысловые жесты (см. Principles.tsx).
    Сама карточка (.pa-item, .pa-panel) — в global.css */
 
+/* Цвет жеста у каждой карточки — из карты талантов:
+   Персонаж — «Креатив» (красный), Состояние — «Коммуникация» (оранжевый), Выбор хода — «Стратегия» (жёлтый) */
+.g-outline { --fx: #ff4d5e; }
+.g-breath { --fx: #ff8a3d; }
+.g-route { --fx: #ffd23f; }
+
 /* Слой с иллюстрацией: картинка обесцвечена и приглушена до 32%, эффекты лежат поверх неё в тех же координатах */
 .pr-fig { position: absolute; z-index: 0; aspect-ratio: 4 / 5; pointer-events: none; }
 .pr-fig > img { position: absolute; inset: 0; width: 100%; height: 100%; max-width: none; filter: grayscale(1); opacity: .32; }
@@ -11,7 +17,7 @@
 /* Персонаж: по силуэту снизу вверх проходит светлая полоса — образ «надевается» */
 .pr-scan {
   position: absolute; inset: 0;
-  background: linear-gradient(0deg, transparent 0%, transparent 38%, rgba(189, 255, 255, .85) 50%, transparent 62%, transparent 100%) 0 0 / 100% 300% no-repeat;
+  background: linear-gradient(0deg, transparent 0%, transparent 38%, color-mix(in srgb, var(--fx) 85%, transparent) 50%, transparent 62%, transparent 100%) 0 0 / 100% 300% no-repeat;
   -webkit-mask: var(--src) 0 0 / 100% 100% no-repeat; mask: var(--src) 0 0 / 100% 100% no-repeat;
   opacity: 0;
 }
@@ -23,12 +29,14 @@
   85%, 100% { background-position: 0 100%; opacity: 0; }
 }
 
-/* Состояние: фигура «дышит» — на вдохе чуть растёт, приподнимается и светлеет; ореол под ней разгорается в такт */
+/* Состояние: фигура «дышит» — на вдохе чуть растёт, приподнимается и светлеет; свет разгорается в груди.
+   Слой света — во всю иллюстрацию и обрезан по силуэту, поэтому светится только тело; двигается вместе с фигурой */
 .pr-halo {
-  position: absolute; left: 50%; top: 80%; width: 110%; height: 30%; translate: -50% -50%;
-  border-radius: 50%;
-  background: radial-gradient(closest-side, rgba(189, 255, 255, .55), rgba(23, 135, 179, .25) 55%, transparent);
-  filter: blur(8px); opacity: .15;
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse 30% 20% at 50% 45%, color-mix(in srgb, var(--fx) 85%, transparent) 0%, color-mix(in srgb, var(--fx) 35%, transparent) 55%, transparent 100%);
+  -webkit-mask: var(--src) 0 0 / 100% 100% no-repeat; mask: var(--src) 0 0 / 100% 100% no-repeat;
+  transform-origin: 50% 85%;
+  opacity: 0;
 }
 .g-breath .pr-fig > img { transform-origin: 50% 85%; }
 .g-breath.is-on .pr-fig > img, .g-breath:hover .pr-fig > img { animation: pr-breath 6s ease-in-out infinite; }
@@ -38,18 +46,18 @@
   50% { transform: translateY(-2.5%) scale(1.07); opacity: .5; }
 }
 @keyframes pr-halo {
-  0%, 100% { opacity: .15; transform: scale(.85); }
-  50% { opacity: .8; transform: scale(1.12); }
+  0%, 100% { transform: translateY(0) scale(1); opacity: 0; }
+  50% { transform: translateY(-2.5%) scale(1.07); opacity: .9; }
 }
 
 /* Выбор хода: по карте прорисовывается маршрут, точки по очереди вспыхивают */
 .pr-route { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
-.pr-route path { fill: none; stroke: var(--accent); stroke-width: .3; stroke-linecap: round; stroke-dasharray: 1; stroke-dashoffset: 1; }
+.pr-route path { fill: none; stroke: var(--fx); stroke-width: .3; stroke-linecap: round; stroke-dasharray: 1; stroke-dashoffset: 1; }
 .pr-route path.glow { stroke-width: 1.4; stroke-opacity: .18; }
 .pr-dot {
   position: absolute; width: 7px; height: 7px; translate: -50% -50%;
-  border-radius: 50%; background: var(--accent);
-  box-shadow: 0 0 6px rgba(189, 255, 255, .9), 0 0 16px rgba(189, 255, 255, .45);
+  border-radius: 50%; background: var(--fx);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--fx) 90%, transparent), 0 0 16px color-mix(in srgb, var(--fx) 45%, transparent);
   opacity: 0;
 }
 .pr-dot.d3 { width: 11px; height: 11px; }

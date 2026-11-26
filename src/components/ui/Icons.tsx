@@ -1,4 +1,4 @@
-import { SolarIcon } from './ui/SolarIcon'
+import { SolarIcon } from './SolarIcon'
 import { useId } from 'react'
 
 export function Arrow({ size = 16 }: { size?: number }) {

@@ -1,5 +1,5 @@
 import { useEffect, useId, useRef, useState } from 'react'
-import { cityMeta, searchCities, type City } from '../lib/cities'
+import { cityMeta, searchCities, type City } from '../../lib/cities'
 
 type Props = {
   value: string

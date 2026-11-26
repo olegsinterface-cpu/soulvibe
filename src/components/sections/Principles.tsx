@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { asset } from '../router'
-import { TiltCard } from './ui/TiltCard'
+import { asset } from '../../router'
+import { TiltCard } from '../ui/TiltCard'
 import './principles.css'
 
 /* Три принципа «Игровой философии»: серые карточки с приглушёнными иллюстрациями.
    У каждой свой смысловой жест — он запускается, когда карточка в середине экрана, и при наведении:
    Персонаж — по силуэту проходит светлая полоса (образ «надевается»),
-   Состояние — фигура медленно «дышит», под ней пульсирует ореол,
+   Состояние — фигура медленно «дышит», на вдохе в груди разгорается свет,
    Выбор хода — по карте прорисовывается маршрут к отметке «Месяц 2». */
 
 export type Principle = { title: string; text: string; img: string; pos: 'bottom' | 'top' | 'corner' }
@@ -34,7 +34,7 @@ function Card({ p, kind, i }: { p: Principle; kind: Gesture; i: number }) {
   const src = { ['--src' as string]: `url(${asset(p.img)})` }
   let fx: ReactNode = null
   if (kind === 'outline') fx = <span className="pr-scan" style={src} />
-  if (kind === 'breath') fx = <span className="pr-halo" />
+  if (kind === 'breath') fx = <span className="pr-halo" style={src} />
   if (kind === 'route') fx = (
     <>
       <svg className="pr-route" viewBox="0 0 80 100" aria-hidden="true">

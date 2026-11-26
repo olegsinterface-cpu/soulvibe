@@ -1,16 +1,19 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { letters, useLetterGradient, useScrollParts } from '../components/ui/letters'
 import { Link, asset } from '../router'
-import { CHARACTERS, HERO, LINKS, ROLE_CARD, ROLE_TABLE, TERMS } from '../content'
-import { Arrow, ArrowDown } from '../components/Icons'
-import EcosystemBeams from '../components/EcosystemBeams'
-import HeroDots from '../components/HeroDots'
-import RoleFan from '../components/RoleFan'
-import FormatsTabs from '../components/FormatsTabs'
-import CasesCarousel, { type CaseCard } from '../components/CasesCarousel'
+import {
+  ABOUT_QUOTE, ABOUT_TITLE, CASE_CARDS, CASES_TITLE, CHARACTERS, CONTACTS_TITLE, HERO, LINKS,
+  PA_NOTE, PA_TITLE, PRINCIPLES, ROLE_CARD, ROLE_TABLE, SHIFTS, TERMS,
+} from '../content'
+import { Arrow, ArrowDown } from '../components/ui/Icons'
+import EcosystemBeams from '../components/sections/EcosystemBeams'
+import HeroDots from '../components/sections/HeroDots'
+import RoleFan from '../components/sections/RoleFan'
+import FormatsTabs from '../components/sections/FormatsTabs'
+import CasesCarousel from '../components/sections/CasesCarousel'
 import { TiltCard } from '../components/ui/TiltCard'
-import TalentMap from '../components/TalentMap'
-import Principles, { type Principle } from '../components/Principles'
+import TalentMap from '../components/sections/TalentMap'
+import Principles from '../components/sections/Principles'
 
 /** Заголовок секции: название блока над заголовком. `n` — порядковый номер, на странице не показывается */
 function SecHead({ label, title, sub }: { n?: string; label: string; title: ReactNode; sub?: ReactNode }) {
@@ -213,22 +216,6 @@ function Brands() {
 /* ---------------- 05 Philosophy ----------------
    Под заголовком — три принципа карточками.
    Бренды — в той же секции, сразу под принципами. */
-const PRINCIPLES: readonly Principle[] = [
-  // pos — где иллюстрация: снизу (текст сверху) или сверху (текст снизу)
-  { title: 'Персонаж', text: 'Игровой образ для личной работы. Через него легче пробовать действовать своей сильной стороной.', img: '/philosophy/ill1.png', pos: 'bottom' },
-  { title: 'Состояние', text: 'То, с чем вы входите в день. Его можно замечать и настраивать — не ждать, что оно изменится само.', img: '/philosophy/ill2.png', pos: 'top' },
-  { title: 'Выбор хода', text: 'Каждый день есть несколько вариантов действий. Игра помогает выбирать осознанно и замечать результат.', img: '/philosophy/ill3.png', pos: 'corner' },
-] as const
-
-const SHIFTS = [
-  { from: 'от «я»', to: 'к «мы»' },
-  { from: 'от должностей', to: 'к природным ролям' },
-  { from: 'от универсальных решений', to: 'к персонализации' },
-  { from: 'от жёсткой иерархии', to: 'к живым системам и партнёрствам' },
-]
-
-const PA_TITLE = 'В центре — идея. Вокруг — шесть ролей'
-const PA_NOTE = 'Когда каждый берёт на себя ту часть работы, в которой силён, команда может провести идею от замысла до масштаба'
 const nChars = (t: string) => t.replace(/\s/g, '').length
 
 function PhilosophyAir() {
@@ -273,41 +260,6 @@ function PhilosophyAir() {
 
 /* ---------------- 06 Cases ----------------
    Тексты кейсов — из макета заказчика (вайрфрейм кейсов). */
-const CASE_CARDS: CaseCard[] = [
-  {
-    id: 'case-alena', label: 'Личный продукт · Алёна, 36 лет', title: 'Освободить время для своего дела',
-    rows: [
-      ['Задача', 'За домашними делами и заботой о детях Алёна откладывала своё дело.'],
-      ['Что делали', 'Три месяца работала с методом SoulVibe и образом Королевы, училась делегировать.'],
-      ['Результат', 'Привлекла помощь по быту, начала вести блог и готовится к запуску бренда натуральной косметики.'],
-    ],
-    quote: { text: 'Я поняла, что Королева не обязана делать всё сама. Отпустила быт, научилась делегировать, начала вести блог, и у меня скоро запуск моего бренда косметики', by: 'Алёна' },
-    cta: { text: 'Познакомиться с ИИ-ментором', href: LINKS.bot },
-  },
-  {
-    id: 'case-soulmind', label: 'SoulMind · история одной игры', title: 'От офлайн-клиники к онлайн-платформе',
-    rows: [
-      ['Задача', 'Рассмотреть идею клиники улучшения качества жизни.'],
-      ['Что делали', 'Обсуждали ресурсы и затраты офлайн-модели с разных позиций.'],
-      ['Результат', 'Появилась концепция онлайн-платформы со специалистами из разных регионов. Участники увидели возможности для партнёрства.'],
-    ],
-    stages: [{ k: 'Исходная идея', v: 'Офлайн-клиника' }, { k: 'Предложенная модель', v: 'Онлайн-платформа' }],
-    cta: { text: 'Обсудить участие в SoulMind', to: '/#contacts' },
-  },
-  {
-    id: 'case-dreamteam', label: 'Dream Team · финтех-команда', title: 'Увидеть сильные стороны ядра команды',
-    rows: [
-      ['Задача', 'Разобраться с мотивацией ключевых людей и позиционированием компании.'],
-      ['Что делали', 'Определили роли участников и провели три встречи в течение месяца.'],
-      ['Результат', 'Карта сильных сторон команды, миссия и позиционирование, новая продуктовая идея и понимание риска ухода ключевого участника.'],
-    ],
-    quote: { text: 'Я по-новому узнал ключевых людей, что ими движет и как вести каждого, узнал, что мог потерять одного из них. Появились новые идеи, которые я уже взял в работу', by: 'Антон, основатель w3g.group' },
-    cta: { text: 'Обсудить задачу своей команды', to: '/#contacts' },
-  },
-]
-
-const CASES_TITLE = 'Примеры и отзывы'
-
 function Cases() {
   const ref = useRef<HTMLElement>(null)
   useScrollParts(ref)
@@ -328,9 +280,6 @@ function Cases() {
 /* ---------------- 07 About ----------------
    Данные — из вайрфрейма: автор Юлия Дмитриева, создатель SoulVibe.
    Биография и методология — тексты заказчика; фото — заглушка. */
-const ABOUT_TITLE = 'Кто стоит за SoulVibe'
-const ABOUT_QUOTE = 'Я верю, что человек раскрывается через понимание своей природы, состояние игры и осознанное взаимодействие с технологиями.'
-
 function About() {
   const ref = useRef<HTMLElement>(null)
   const block = useRef<HTMLDivElement>(null)
@@ -365,7 +314,7 @@ function About() {
         <div className={`about about-reveal${shown ? ' is-in' : ''}`} ref={block}>
           {/* Наклон за курсором — как у карточек «Игровой философии» */}
           <TiltCard className={`author-photo${photoReady ? ' is-loaded' : ''}`}>
-            <img ref={photo} src={asset('/author.jpg')} alt="Юлия Дмитриева, создатель SoulVibe" width="1166" height="1400" decoding="async" onLoad={() => setPhotoReady(true)} />
+            <img ref={photo} src={asset('/about/author.jpg')} alt="Юлия Дмитриева, создатель SoulVibe" width="1166" height="1400" decoding="async" onLoad={() => setPhotoReady(true)} />
           </TiltCard>
           <div className="about-body">
             <div className="about-person">
@@ -395,8 +344,6 @@ function About() {
 /* ---------------- 08 Contacts ----------------
    По ТЗ: «Напишите нам…» и две кнопки — Telegram и email; клик не отправляет сообщение сам.
    Адреса — заглушки из LINKS до получения настоящих. */
-const CONTACTS_TITLE = 'Напишите нам'
-
 function Contacts() {
   const telegramLabel = LINKS.telegram.replace(/^https?:\/\//, '')
   const ref = useRef<HTMLElement>(null)

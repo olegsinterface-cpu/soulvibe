@@ -1,5 +1,5 @@
-import { Link, asset } from '../router'
-import { LINKS, NAV } from '../content'
+import { Link, asset } from '../../router'
+import { LINKS, NAV } from '../../content'
 
 export default function Footer() {
   return (

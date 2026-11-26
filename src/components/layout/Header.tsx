@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
-import { Link, asset } from '../router'
-import { NAV } from '../content'
-import { ShinyButton } from './ui/ShinyButton'
+import { Link, asset } from '../../router'
+import { NAV } from '../../content'
+import { ShinyButton } from '../ui/ShinyButton'
 
 export default function Header() {
   const [open, setOpen] = useState(false)

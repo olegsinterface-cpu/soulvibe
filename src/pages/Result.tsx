@@ -1,6 +1,6 @@
 import { Link } from '../router'
 import { LINKS, RESULT_MANAGER as R } from '../content'
-import { Arrow } from '../components/Icons'
+import { Arrow } from '../components/ui/Icons'
 import { TiltCard } from '../components/ui/TiltCard'
 import { SolarIcon } from '../components/ui/SolarIcon'
 

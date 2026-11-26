@@ -1,9 +1,9 @@
 import { forwardRef, useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode, type RefObject } from 'react'
-import { asset } from '../router'
+import { asset } from '../../router'
 import './ecosystem-beams.css'
-import { SolarIcon } from './ui/SolarIcon'
-import { SHINE } from './ui/shine'
-import { triggerEdgeGlow } from './ui/edgeGlow'
+import { SolarIcon } from '../ui/SolarIcon'
+import { SHINE } from '../ui/shine'
+import { triggerEdgeGlow } from '../ui/edgeGlow'
 
 /* ---------- Иконки узлов — набор Solar Linear ---------- */
 const I = {

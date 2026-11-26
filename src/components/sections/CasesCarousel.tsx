@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
-import { Link, useLocation } from '../router'
-import { Arrow } from './Icons'
-import { SolarIcon } from './ui/SolarIcon'
+import { Link, useLocation } from '../../router'
+import { Arrow } from '../ui/Icons'
+import { SolarIcon } from '../ui/SolarIcon'
 import './cases-carousel.css'
 
 /* Карусель кейсов в объёме: активная карточка по центру, две другие — повёрнуты к ней, размыты и позади.

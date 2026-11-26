@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
-import { asset } from '../router'
-import { SHINE } from './ui/shine'
+import { asset } from '../../router'
+import { SHINE } from '../ui/shine'
 import './talent-map.css'
 
 /* «Карта талантов» — по схеме заказчика, в стиле схемы экосистемы.

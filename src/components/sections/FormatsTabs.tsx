@@ -1,9 +1,9 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
-import { Link, asset, useLocation } from '../router'
-import { DIALOG, FORMATS, LINKS, type FormatId } from '../content'
-import { Arrow } from './Icons'
-import { SolarIcon } from './ui/SolarIcon'
-import { letters, useScrollParts } from './ui/letters'
+import { Link, asset, useLocation } from '../../router'
+import { DIALOG, FORMATS, LINKS, type FormatId } from '../../content'
+import { Arrow } from '../ui/Icons'
+import { SolarIcon } from '../ui/SolarIcon'
+import { letters, useScrollParts } from '../ui/letters'
 import './formats-tabs.css'
 
 /* Облегчённый вариант секции «Форматы работы»:
