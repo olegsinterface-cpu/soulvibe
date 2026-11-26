@@ -8,12 +8,13 @@
   inset: 0;
   border-radius: inherit;
   padding: 1.5px;
+  /* цвета вспышки можно задать блоку: --bc (край) и --bc-mid (середина); по умолчанию — фирменные */
   background: radial-gradient(circle 64px at var(--hit-x, 0) var(--hit-y, 50%),
-    #ffffff 0%, #bdffff 22%, rgba(23, 135, 179, 0.7) 55%, rgba(23, 135, 179, 0) 100%);
+    #ffffff 0%, var(--bc-mid, #bdffff) 22%, color-mix(in srgb, var(--bc, #1787b3) 70%, transparent) 55%, transparent 100%);
   -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
-  filter: drop-shadow(0 0 4px rgba(189, 255, 255, 0.7));
+  filter: drop-shadow(0 0 4px color-mix(in srgb, var(--bc-mid, #bdffff) 70%, transparent));
   opacity: 0;
   pointer-events: none;
 }

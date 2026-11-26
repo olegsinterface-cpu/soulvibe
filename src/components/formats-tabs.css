@@ -238,11 +238,9 @@
   .ft-reveal .ft-info, .ft-reveal .ft-visual { opacity: 1; translate: none; transition: none; }
   .ft-reveal .ft-msg, .ft-reveal .ft-msg-wrap, .ft-reveal .ft-steps li, .ft-reveal .ft-steps li::before, .ft-reveal .ft-steps::before { opacity: 1 !important; animation: none !important; }
 }
-/* метка низа диалога — по ней запускается показ сообщений */
+/* метка в верхней части диалога — по ней запускается показ сообщений */
 .ft-chat-end { position: absolute; left: 0; bottom: 0; width: 1px; height: 1px; pointer-events: none; }
-/* Телефон: карточка выше экрана, поэтому диалог заполняется сверху вниз — сообщения видны сразу,
-   как только до карточки долистали; запуск — когда в экран вошёл верх диалога */
-@media (max-width: 960px) {
-  .ft-chat.is-live { top: 0; bottom: auto; justify-content: flex-start; }
-  .ft-chat-end { top: 160px; bottom: auto; }
-}
+/* Диалог заполняется сверху вниз и стартует, когда в экран вошёл его верх: так сообщения появляются там,
+   куда смотрят, даже если низ карточки ещё за краем экрана (телефон, невысокий экран ноутбука) */
+.ft-chat.is-live { top: 0; bottom: auto; justify-content: flex-start; }
+.ft-chat-end { top: 160px; bottom: auto; }

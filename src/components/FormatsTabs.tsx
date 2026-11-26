@@ -35,9 +35,11 @@ export default function FormatsTabs() {
   // правая карточка (диалог / шаги) — по своему входу в экран: на телефоне она ниже левой,
   // и анимация не должна отыграть раньше, чем до неё долистали
   const visualIn = useInView(visualRef, 0.3)
-  // диалог стартует, когда в экран вошёл низ блока — сообщения появляются снизу
-  const chatEnd = useRef<HTMLSpanElement>(null)
-  const chatIn = useInView(chatEnd, 0, '0px 0px -8% 0px')
+  // диалог стартует, когда в экран вошёл верх диалога (метка в 160px от верха) — сообщения заполняют его сверху вниз
+  // метка лежит внутри вкладки «Хочу работать над собой» и пересоздаётся при переключении вкладок —
+  // поэтому храним сам элемент в состоянии: наблюдение переподключается к новой метке
+  const [chatEnd, setChatEnd] = useState<HTMLSpanElement | null>(null)
+  const chatIn = useInViewEl(chatEnd, 0, '0px 0px -8% 0px')
 
   // Переключатель: светлый бегунок встаёт под выбранную вкладку
   const segRef = useRef<HTMLDivElement>(null)
@@ -148,7 +150,7 @@ export default function FormatsTabs() {
               <>
                 <span className="ft-visual-label">Пример диалога</span>
                 <div className="ft-chat-box">
-                  <span className="ft-chat-end" ref={chatEnd} aria-hidden="true" />
+                  <span className="ft-chat-end" ref={setChatEnd} aria-hidden="true" />
                   {/* невидимая полная копия — держит высоту блока */}
                   <div className="ft-chat is-ghost" aria-hidden="true">
                     {DIALOG.map((m, i) => (
@@ -205,10 +207,15 @@ export default function FormatsTabs() {
 
 /** true, когда элемент входит в экран; сбрасывается, когда он снова целиком ниже экрана — появление повторится */
 function useInView(ref: React.RefObject<HTMLElement>, threshold: number, rootMargin = '0px') {
+  return useInViewEl(ref.current, threshold, rootMargin, ref)
+}
+
+/** То же по самому элементу: если элемент пересоздан, наблюдение переключается на новый */
+function useInViewEl(node: HTMLElement | null, threshold: number, rootMargin = '0px', ref?: React.RefObject<HTMLElement>) {
   const [inView, setInView] = useState(false)
   useEffect(() => {
-    const el = ref.current
-    if (!el) return
+    const el = ref?.current ?? node
+    if (!el) { setInView(false); return }
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) { setInView(true); return }
     const io = new IntersectionObserver(([e]) => {
       if (e.isIntersecting) setInView(true)
@@ -216,7 +223,7 @@ function useInView(ref: React.RefObject<HTMLElement>, threshold: number, rootMar
     }, { threshold, rootMargin })
     io.observe(el)
     return () => io.disconnect()
-  }, [ref, threshold, rootMargin])
+  }, [node, ref, threshold, rootMargin])
   return inView
 }
 

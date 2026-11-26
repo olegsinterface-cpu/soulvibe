@@ -703,57 +703,28 @@ button, input { font: inherit; color: inherit; }
 
 /* Три принципа — колонками, только тонкая линия сверху */
 .pa-principles { perspective: 1500px; margin-top: 56px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--stack); }
-/* Карточка целиком — живой градиент: сверху глубокий тёмно-синий, книзу синий, голубой и светлое ядро
-   в правом нижнем углу (там нет текста). Текст белый поверх. */
+/* Карточка — серая, без рамки; иллюстрация обесцвечена и приглушена до 32%, текст поверх.
+   Раскладка по образцу: у «Персонажа» и «Выбора хода» текст сверху и рисунок снизу, у «Состояния» — наоборот */
 .pa-item {
   position: relative;
   overflow: hidden; isolation: isolate;
+  aspect-ratio: 1 / 1;
+  container-type: inline-size; /* текст масштабируется от ширины карточки — раскладка как в образце на любой ширине */
   border-radius: var(--radius-lg);
-  background: linear-gradient(180deg, #1b2329 0%, #15394a 55%, #17698c 100%);
+  background: #2b2d30;
 }
 .pa-panel {
-  position: relative; z-index: 1;
-  display: flex; flex-direction: column; gap: 12px; /* текст сразу под заголовком */
-  min-height: 340px; padding: 28px;
+  position: relative; z-index: 1; height: 100%;
+  display: flex; flex-direction: column; gap: 2.4cqw; /* текст сразу под заголовком */
+  padding: 28px; /* как у средних карточек сайта («Методология», контакты); на телефоне — 20px */
 }
-.pa-panel h4 { font-size: 24px; font-weight: 500; letter-spacing: -0.02em; color: var(--text); }
-.pa-panel p { margin-top: 0; max-width: 300px; font-size: 15px; line-height: 1.5; color: rgba(255, 255, 255, 0.82); }
-/* Safari не обрезает по скруглённым углам слой с анимированным размытием (filter + animation),
-   поэтому сияние дополнительно обрезаем маской со скруглением */
-.pa-glow {
-  position: absolute; inset: 0; z-index: 0; overflow: hidden; pointer-events: none;
-  border-radius: inherit;
-  clip-path: inset(0 round var(--radius-lg));
-  -webkit-mask-image: -webkit-radial-gradient(white, black);
-}
-/* «Северное сияние»: размытые пятна медленно перетекают */
-.pa-glow::before {
-  content: ''; position: absolute; inset: -25%; z-index: -2;
-  background:
-    radial-gradient(14% 14% at 78% 82%, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0) 100%),
-    radial-gradient(22% 20% at 68% 78%, rgba(189, 255, 255, 0.85) 0%, rgba(189, 255, 255, 0) 100%),
-    radial-gradient(18% 24% at 86% 62%, rgba(189, 255, 255, 0.45) 0%, rgba(189, 255, 255, 0) 100%),
-    radial-gradient(30% 26% at 30% 84%, rgba(23, 135, 179, 1) 0%, rgba(23, 135, 179, 0) 100%),
-    radial-gradient(28% 30% at 80% 50%, rgba(23, 135, 179, 0.7) 0%, rgba(23, 135, 179, 0) 100%),
-    radial-gradient(34% 26% at 20% 30%, rgba(19, 73, 95, 0.8) 0%, rgba(19, 73, 95, 0) 100%);
-  filter: blur(22px) saturate(1.2);
-  opacity: 0.95;
-  transition: filter .6s ease, opacity .6s ease;
-}
-/* Зерно и светлая кромка по нижнему краю — объём, как у стекла */
-.pa-glow::after {
-  content: ''; position: absolute; inset: 0; z-index: -1;
-  background:
-    linear-gradient(0deg, rgba(255, 255, 255, 0.5) 0, rgba(255, 255, 255, 0) 2px),
-    var(--grain);
-  opacity: 0.22; mix-blend-mode: overlay;
-}
-/* У каждой карточки свой рисунок — сдвиг фазы */
-.pa-item:hover .pa-glow::before { opacity: 1; filter: blur(20px) saturate(1.4) brightness(1.1); }
+.pa-item.is-top .pa-panel { justify-content: flex-end; }
+.pa-panel h4 { font-size: max(20px, 6.8cqw); font-weight: 500; line-height: 1.15; letter-spacing: -0.02em; color: var(--text); }
+.pa-panel p { margin-top: 0; font-size: max(13px, 4.2cqw); line-height: 1.28; color: var(--text-2); }
 
 @media (max-width: 860px) {
   .pa-principles { grid-template-columns: 1fr; margin-top: 40px; }
-  .pa-panel { min-height: 260px; padding: 22px 20px; }
+  .pa-panel { padding: 20px; }
 }
 
 .brands {

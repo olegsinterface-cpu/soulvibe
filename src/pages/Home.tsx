@@ -10,6 +10,7 @@ import FormatsTabs from '../components/FormatsTabs'
 import CasesCarousel, { type CaseCard } from '../components/CasesCarousel'
 import { TiltCard } from '../components/ui/TiltCard'
 import TalentMap from '../components/TalentMap'
+import Principles, { type Principle } from '../components/Principles'
 
 /** Заголовок секции: название блока над заголовком. `n` — порядковый номер, на странице не показывается */
 function SecHead({ label, title, sub }: { n?: string; label: string; title: ReactNode; sub?: ReactNode }) {
@@ -212,10 +213,11 @@ function Brands() {
 /* ---------------- 05 Philosophy ----------------
    Под заголовком — три принципа карточками.
    Бренды — в той же секции, сразу под принципами. */
-const PRINCIPLES = [
-  { title: 'Персонаж', text: 'Игровой образ для личной работы. Через него легче пробовать действовать своей сильной стороной.' },
-  { title: 'Состояние', text: 'То, с чем вы входите в день. Его можно замечать и настраивать — не ждать, что оно изменится само.' },
-  { title: 'Выбор хода', text: 'Каждый день есть несколько вариантов действий. Игра помогает выбирать осознанно и замечать результат.' },
+const PRINCIPLES: readonly Principle[] = [
+  // pos — где иллюстрация: снизу (текст сверху) или сверху (текст снизу)
+  { title: 'Персонаж', text: 'Игровой образ для личной работы. Через него легче пробовать действовать своей сильной стороной.', img: '/philosophy/ill1.png', pos: 'bottom' },
+  { title: 'Состояние', text: 'То, с чем вы входите в день. Его можно замечать и настраивать — не ждать, что оно изменится само.', img: '/philosophy/ill2.png', pos: 'top' },
+  { title: 'Выбор хода', text: 'Каждый день есть несколько вариантов действий. Игра помогает выбирать осознанно и замечать результат.', img: '/philosophy/ill3.png', pos: 'corner' },
 ] as const
 
 const SHIFTS = [
@@ -260,19 +262,8 @@ function PhilosophyAir() {
               ))}
             </div>
           </div>
-          {/* Три принципа — карточками в ряд */}
-          <div className="pa-principles sp-stagger" data-sp>
-            {PRINCIPLES.map((x, i) => (
-              <TiltCard className="pa-item" key={x.title} style={{ ['--i' as string]: i }}>
-                {/* Текст поверх живого градиента; карточка наклоняется за курсором */}
-                <div className="pa-panel">
-                  <h4>{x.title}</h4>
-                  <p>{x.text}</p>
-                </div>
-                <div className="pa-glow" aria-hidden="true" />
-              </TiltCard>
-            ))}
-          </div>
+          {/* Три принципа — карточками в ряд, у каждой свой жест (контур, дыхание, маршрут) */}
+          <Principles items={PRINCIPLES} />
           <Brands />
         </div>
       </section>

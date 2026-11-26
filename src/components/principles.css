@@ -1,0 +1,66 @@
+/* Три принципа «Игровой философии» — иллюстрации и смысловые жесты (см. Principles.tsx).
+   Сама карточка (.pa-item, .pa-panel) — в global.css */
+
+/* Слой с иллюстрацией: картинка обесцвечена и приглушена до 32%, эффекты лежат поверх неё в тех же координатах */
+.pr-fig { position: absolute; z-index: 0; aspect-ratio: 4 / 5; pointer-events: none; }
+.pr-fig > img { position: absolute; inset: 0; width: 100%; height: 100%; max-width: none; filter: grayscale(1); opacity: .32; }
+.pa-item.is-bottom .pr-fig { left: 50%; top: 20%; height: 92%; translate: -50% 0; } /* голова под текстом, плечи ~38% ширины */
+.pa-item.is-top .pr-fig { left: 50%; top: -17%; height: 94%; translate: -50% 0; }   /* фигура от ~6% до ~63% высоты */
+.pa-item.is-corner .pr-fig { left: -10%; top: 15%; height: 116%; }                   /* карта под текстом, руки уходят за край */
+
+/* Персонаж: по силуэту снизу вверх проходит светлая полоса — образ «надевается» */
+.pr-scan {
+  position: absolute; inset: 0;
+  background: linear-gradient(0deg, transparent 0%, transparent 38%, rgba(189, 255, 255, .85) 50%, transparent 62%, transparent 100%) 0 0 / 100% 300% no-repeat;
+  -webkit-mask: var(--src) 0 0 / 100% 100% no-repeat; mask: var(--src) 0 0 / 100% 100% no-repeat;
+  opacity: 0;
+}
+.g-outline.is-on .pr-scan, .g-outline:hover .pr-scan { animation: pr-scan 4.5s cubic-bezier(.45, 0, .25, 1) infinite; }
+@keyframes pr-scan {
+  0% { background-position: 0 0; opacity: 0; }
+  10% { opacity: .9; }
+  70% { background-position: 0 100%; opacity: .9; }
+  85%, 100% { background-position: 0 100%; opacity: 0; }
+}
+
+/* Состояние: фигура «дышит» — на вдохе чуть растёт, приподнимается и светлеет; ореол под ней разгорается в такт */
+.pr-halo {
+  position: absolute; left: 50%; top: 80%; width: 110%; height: 30%; translate: -50% -50%;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(189, 255, 255, .55), rgba(23, 135, 179, .25) 55%, transparent);
+  filter: blur(8px); opacity: .15;
+}
+.g-breath .pr-fig > img { transform-origin: 50% 85%; }
+.g-breath.is-on .pr-fig > img, .g-breath:hover .pr-fig > img { animation: pr-breath 6s ease-in-out infinite; }
+.g-breath.is-on .pr-halo, .g-breath:hover .pr-halo { animation: pr-halo 6s ease-in-out infinite; }
+@keyframes pr-breath {
+  0%, 100% { transform: translateY(0) scale(1); opacity: .32; }
+  50% { transform: translateY(-2.5%) scale(1.07); opacity: .5; }
+}
+@keyframes pr-halo {
+  0%, 100% { opacity: .15; transform: scale(.85); }
+  50% { opacity: .8; transform: scale(1.12); }
+}
+
+/* Выбор хода: по карте прорисовывается маршрут, точки по очереди вспыхивают */
+.pr-route { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.pr-route path { fill: none; stroke: var(--accent); stroke-width: .3; stroke-linecap: round; stroke-dasharray: 1; stroke-dashoffset: 1; }
+.pr-route path.glow { stroke-width: 1.4; stroke-opacity: .18; }
+.pr-dot {
+  position: absolute; width: 7px; height: 7px; translate: -50% -50%;
+  border-radius: 50%; background: var(--accent);
+  box-shadow: 0 0 6px rgba(189, 255, 255, .9), 0 0 16px rgba(189, 255, 255, .45);
+  opacity: 0;
+}
+.pr-dot.d3 { width: 11px; height: 11px; }
+.g-route.is-on .pr-route path, .g-route:hover .pr-route path { animation: pr-draw 5s cubic-bezier(.65, 0, .35, 1) infinite; }
+.g-route.is-on .pr-dot, .g-route:hover .pr-dot { animation: pr-dot 5s ease infinite; }
+.g-route .pr-dot.d2 { animation-delay: .5s; }
+.g-route .pr-dot.d3 { animation-delay: 1.3s; }
+@keyframes pr-draw { 0% { stroke-dashoffset: 1; opacity: 1; } 40% { stroke-dashoffset: 0; } 80% { stroke-dashoffset: 0; opacity: 1; } 95%, 100% { stroke-dashoffset: 0; opacity: 0; } }
+@keyframes pr-dot { 0% { opacity: 0; scale: 0; } 8% { opacity: 1; scale: 1.4; } 14%, 70% { opacity: 1; scale: 1; } 85%, 100% { opacity: 0; scale: 1; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .pr-scan, .pr-halo, .pr-route path, .pr-dot, .g-breath .pr-fig > img { animation: none !important; }
+  .pr-route path { stroke-dashoffset: 0; } .pr-dot { opacity: 1; }
+}
