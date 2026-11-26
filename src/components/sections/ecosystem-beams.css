@@ -112,8 +112,9 @@
 
 .beams-tree {
   position: relative; z-index: 1;
-  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)) 120px repeat(2, minmax(0, 1fr)); /* третья колонка — коридор для ствола */
-  column-gap: 14px; row-gap: 0;
+  --trunk: 120px; --cg: 14px; /* ширина коридора для ствола и зазор между колонками */
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)) var(--trunk) repeat(2, minmax(0, 1fr)); /* третья колонка — коридор для ствола */
+  column-gap: var(--cg); row-gap: 0;
   margin-top: 88px;
 }
 .tree-group { display: contents; }
@@ -133,7 +134,14 @@
   white-space: nowrap;
 }
 .tree-group.is-center > .tree-label { grid-row: 4; margin-top: 64px; }
-.tree-group.is-center > .bnode { grid-column: 1 / -1; grid-row: 5; justify-self: center; width: min(340px, 100%); }
+/* «Развитие экосистемы» — пара блоков вплотную с тем же зазором, что в группах выше,
+   по центру под плашкой: левый заканчивается, а правый начинается в половине зазора от ствола */
+.tree-group.is-center > .bnode {
+  grid-column: 1 / -1; grid-row: 5;
+  width: calc((100% - var(--trunk) - 4 * var(--cg)) / 4 * 1.5); /* в 1,5 раза шире блоков сверху — в ряду только эта группа */
+  justify-self: end; margin-right: calc(50% + var(--cg) / 2);
+}
+.tree-group.is-center > .bnode + .bnode { grid-column: 1 / -1; justify-self: start; margin-right: 0; margin-left: calc(50% + var(--cg) / 2); }
 .beams-tree .beams-note { grid-row: 3; margin-top: 14px; font-size: 13px; color: var(--text-3); border-left: 0; padding-left: 0; text-align: center; }
 
 /* Блок в дереве: иконка сверху, текст под ней */
@@ -143,7 +151,7 @@
 
 @media (max-width: 1200px) and (min-width: 1025px) {
   .beams { padding: 40px 24px; }
-  .beams-tree { column-gap: 10px; grid-template-columns: repeat(2, minmax(0, 1fr)) 72px repeat(2, minmax(0, 1fr)); }
+  .beams-tree { --trunk: 72px; --cg: 10px; }
   .beams-tree .bnode { padding: 16px 14px; }
   .tree-label { font-size: 14px; padding: 9px 14px; }
 }
@@ -160,7 +168,7 @@
   .tree-group { display: flex; flex-direction: column; gap: 8px; }
   .tree-group + .tree-group { margin-top: 20px; }
   .tree-group.is-center > .tree-label { margin-top: 0; }
-  .tree-group.is-center > .bnode { width: auto; }
+  .tree-group.is-center > .bnode, .tree-group.is-center > .bnode + .bnode { width: auto; margin: 0; }
   .tree-label { margin: 0; padding: 0; background: none; box-shadow: none; justify-self: auto; font-size: 15px; }
   .beams-tree .beams-note { margin-top: 0; text-align: left; border-left: 1px solid var(--line-2); padding-left: 12px; }
   .beams-tree .bnode { grid-template-columns: 36px 1fr; gap: 12px; padding: 14px; }

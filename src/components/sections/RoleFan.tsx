@@ -6,6 +6,12 @@ import { TiltCard } from '../ui/TiltCard'
 import { letters, useScrollParts } from '../ui/letters'
 import './role-fan.css'
 
+const TITLE = ROLE_FAN.titleLines.join(' ')
+const LINE_START = ROLE_FAN.titleLines.reduce<number[]>((acc, _l, i, all) => {
+  acc.push(i === 0 ? 0 : acc[i - 1] + all[i - 1].replace(/\s/g, '').length)
+  return acc
+}, [])
+
 /* Альтернативный вариант секции «Роль и персонаж»:
    веер карточек — в центре Королева, по бокам скрытые персонажи (сильно размыты, без имён),
    под веером — талант этой роли, заголовок и одна кнопка. */
@@ -72,8 +78,11 @@ export default function RoleFan() {
         </div>
 
         {/* Текст по буквам — как в других секциях: входит снизу и уходит при прокрутке дальше */}
-        <h2 className="sl" data-sp aria-label={ROLE_FAN.title} style={{ ['--n' as string]: count(ROLE_FAN.title) }}>
-          <span aria-hidden="true">{letters(ROLE_FAN.title, 0)}</span>
+        <h2 className="sl" data-sp aria-label={TITLE} style={{ ['--n' as string]: count(TITLE) }}>
+          {/* каждая строка — с новой строки; номера букв идут сквозь все строки, чтобы появление шло по порядку */}
+          {ROLE_FAN.titleLines.map((line, i) => (
+            <span key={i} className="fan-title-line" aria-hidden="true">{letters(line, LINE_START[i])}</span>
+          ))}
         </h2>
         <p className="fan-lead sl" data-sp aria-label={ROLE_FAN.lead} style={{ ['--n' as string]: count(ROLE_FAN.lead) }}>
           <span aria-hidden="true">{letters(ROLE_FAN.lead, 0)}</span>

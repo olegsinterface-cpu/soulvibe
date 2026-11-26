@@ -12,6 +12,7 @@ const I = {
   idea: <SolarIcon name="idea" size={20} />,
   team: <SolarIcon name="team" size={20} />,
   collab: <SolarIcon name="collab" size={20} />,
+  experts: <SolarIcon name="star" size={20} />,
 }
 
 /* Цвета направлений — из карты талантов: личный путь — «Видение», идеи и команды — «Креатив»,
@@ -53,7 +54,7 @@ Node.displayName = 'Node'
    Телефон: ствол по оси круга вниз, к каждому блоку поворот вправо. */
 const TREE_MQ = '(min-width: 1025px)'
 /** К какой плашке направления относится каждый блок */
-const GROUP_OF = [0, 0, 1, 1, 2]
+const GROUP_OF = [0, 0, 1, 1, 2, 2]
 
 function useBeamPaths(
   container: RefObject<HTMLElement>, hub: RefObject<HTMLElement>,
@@ -119,10 +120,11 @@ export default function EcosystemBeams() {
   const n3 = useRef<HTMLDivElement>(null)
   const n4 = useRef<HTMLDivElement>(null)
   const n5 = useRef<HTMLDivElement>(null)
+  const n6 = useRef<HTMLDivElement>(null)
   const g1 = useRef<HTMLDivElement>(null)
   const g2 = useRef<HTMLDivElement>(null)
   const g3 = useRef<HTMLDivElement>(null)
-  const { w, h, paths } = useBeamPaths(container, hub, [g1, g2, g3], [n1, n2, n3, n4, n5])
+  const { w, h, paths } = useBeamPaths(container, hub, [g1, g2, g3], [n1, n2, n3, n4, n5, n6])
 
   // Появление схемы: когда она входит в экран — класс is-in (центр проявляется, линии прорисовываются,
   // затем направления и блоки). Если схема снова целиком ушла вниз за экран — класс снимается,
@@ -141,7 +143,7 @@ export default function EcosystemBeams() {
   }, [])
 
   const svgRef = useRef<SVGSVGElement>(null)
-  const nodeRefs = [n1, n2, n3, n4, n5]
+  const nodeRefs = [n1, n2, n3, n4, n5, n6]
 
   // Анимация импульсов. Каждый импульс — один штрих с плавным градиентом (как блик кнопки в шапке).
   // Каждый кадр штрих сдвигается вдоль линии, а градиент поворачивается по хорде от хвоста к голове
@@ -305,6 +307,7 @@ export default function EcosystemBeams() {
         <div className="tree-group is-center" style={{ '--from': 1, '--span': 5 } as CSSProperties}>
           <div className="tree-label" ref={g3} style={groupVars(2)}>Развитие экосистемы</div>
           <Node ref={n5} group={2} icon={I.collab} title="Коллаборации с брендами" caption="украшения, ароматы, одежда и другие направления" status="Направление открыто для обсуждения" />
+          <Node ref={n6} group={2} icon={I.experts} title="Коллаборации с лидерами мнений, экспертами" caption="Совместные продукты и партнёрская программа с вознаграждением 50% за привлечённых пользователей." />
         </div>
       </div>
     </div>

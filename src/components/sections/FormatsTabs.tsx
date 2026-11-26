@@ -15,6 +15,11 @@ const TITLE = 'Выберите формат под свою задачу'
 const SUB = 'Все форматы опираются на одну методологию — начните с того, что вам сейчас нужно.'
 const count = (t: string) => t.replace(/\s/g, '').length
 
+/** Где одна колонка (телефон, планшет) — там сообщения появляются по мере прокрутки */
+const SCROLL_MQ = '(max-width: 960px)'
+/** Сообщение появляется, когда верх его места поднялся выше нижнего края экрана на столько пикселей */
+const REVEAL_OFFSET = 120
+
 export default function FormatsTabs() {
   const { hash } = useLocation()
   const fromHash = IDS.find((id) => hash === `format-${id}`)
@@ -60,6 +65,7 @@ export default function FormatsTabs() {
   // Диалог появляется как в мессенджере: новое сообщение возникает внизу и выталкивает прошлые вверх.
   // Высоту блока задаёт невидимая полная копия диалога — блок не растягивается во время показа.
   const [msgCount, setMsgCount] = useState<number>(DIALOG.length)
+  const chatGhost = useRef<HTMLDivElement>(null)
   useEffect(() => {
     if (active !== 'mentor' || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
       setMsgCount(DIALOG.length)
@@ -68,6 +74,27 @@ export default function FormatsTabs() {
     // пока до диалога не долистали — он пуст (высоту держит невидимая копия)
     if (!chatIn) { setMsgCount(0); return }
     setMsgCount(0)
+    // Телефон (одна колонка): сообщения появляются по мере прокрутки — каждое, когда его место в диалоге
+    // поднялось над нижней частью экрана. Так человек успевает прочитать одно, прежде чем появится следующее.
+    // Место берём из невидимой полной копии диалога — она лежит ровно там же, где живые сообщения.
+    if (window.matchMedia(SCROLL_MQ).matches) {
+      let raf = 0
+      const update = () => {
+        raf = 0
+        const slots = chatGhost.current?.querySelectorAll<HTMLElement>('.ft-msg')
+        if (!slots) return
+        const line = window.innerHeight - REVEAL_OFFSET
+        let n = 0
+        slots.forEach((el) => { if (el.getBoundingClientRect().top < line) n += 1 })
+        setMsgCount((prev) => Math.max(prev, n)) // уже показанные не прячем
+      }
+      const onScroll = () => { if (!raf) raf = requestAnimationFrame(update) }
+      update()
+      window.addEventListener('scroll', onScroll, { passive: true })
+      window.addEventListener('resize', onScroll)
+      return () => { window.removeEventListener('scroll', onScroll); window.removeEventListener('resize', onScroll); cancelAnimationFrame(raf) }
+    }
+    // Компьютер: диалог целиком на экране — сообщения появляются по очереди сами
     let n = 0
     let t = window.setTimeout(function tick() {
       n += 1
@@ -152,7 +179,7 @@ export default function FormatsTabs() {
                 <div className="ft-chat-box">
                   <span className="ft-chat-end" ref={setChatEnd} aria-hidden="true" />
                   {/* невидимая полная копия — держит высоту блока */}
-                  <div className="ft-chat is-ghost" aria-hidden="true">
+                  <div className="ft-chat is-ghost" aria-hidden="true" ref={chatGhost}>
                     {DIALOG.map((m, i) => (
                       <div key={i} className="ft-msg-wrap"><div className="ft-msg-in">
                       <div className={`ft-msg ${m.from}`}>

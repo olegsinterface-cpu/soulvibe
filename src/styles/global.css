@@ -1171,6 +1171,7 @@ p, li, dd, blockquote, figcaption { text-wrap: pretty; }
 /* ============ Секции: буквы и блоки, привязанные к прокрутке (см. useScrollParts) ============
    --en: вход снизу (0 → 1), --ex: уход вверх (0 → 1), --c — номер буквы, --n — сколько букв в блоке.
    Буква выезжает справа на 40px и проявляется; уходя — сдвигается влево на 30px и гаснет. Порядок — по номеру. */
+.sl { text-wrap: pretty; } /* без одного слова на последней строке */
 .sl .ha-word { display: inline-block; white-space: nowrap; }
 .sl .gt { background: none; -webkit-text-fill-color: currentColor; color: inherit; } /* цвет — у каждой буквы */
 .sl .ha-ch {

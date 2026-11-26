@@ -64,7 +64,7 @@
 }
 .fan-talent b { font-size: 20px; line-height: 25px; font-weight: 600; letter-spacing: -0.02em; }
 .fan-talent p { margin-top: 4px; font-size: 15px; line-height: 20px; color: var(--text-2); }
-.role-fan h2 { margin-top: 48px; font-size: clamp(30px, 3.8vw, 54px); line-height: 1.05; letter-spacing: -0.035em; max-width: 860px; }
+.role-fan h2 { margin-top: 64px; font-size: clamp(30px, 3.8vw, 54px); line-height: 1.05; letter-spacing: -0.035em; max-width: 1000px; } /* шире, чтобы «Персонаж — для раскрытия таланта» помещалась в строку */
 .fan-lead { margin-top: 18px; color: var(--text-2); max-width: 640px; }
 .role-fan .btn { margin-top: 32px; }
 
@@ -82,7 +82,7 @@
   .fan-talent { padding: 28px 10px 12px; gap: 2px; }
   .fan-talent b { font-size: 16px; line-height: 20px; }
   .fan-talent p { font-size: 12px; line-height: 16px; }
-  .role-fan h2 { margin-top: 32px; }
+  .role-fan h2 { margin-top: 44px; }
 }
 /* Наклон за курсором у Королевы — вращение вокруг центра карточки */
 .fan-card.is-main.tilt { transform-origin: 50% 50%; }
@@ -119,3 +119,6 @@
 @media (prefers-reduced-motion: reduce) {
   .fan-reveal .fan-card.is-main, .fan-reveal .fan-card.is-hidden { opacity: 1; translate: none; --spread: 1; transition: none; }
 }
+
+/* Заголовок — заданными строками (на узком экране строка может дополнительно переноситься внутри себя) */
+.fan-title-line { display: block; }
