@@ -986,7 +986,9 @@ button, input { font: inherit; color: inherit; }
   width: 100%;
   border-radius: var(--radius-lg); background: var(--bg-2);
 }
-.res-photo { position: relative; margin: 0; aspect-ratio: 4 / 3; overflow: hidden; }
+/* скругление верхних углов задано и самому фото: размытие и маска выносят картинку в отдельный слой,
+   и скругление карточки (overflow: hidden) её не обрезает — особенно при наклоне карточки */
+.res-photo { position: relative; margin: 0; aspect-ratio: 4 / 3; overflow: hidden; border-radius: var(--radius-lg) var(--radius-lg) 0 0; }
 /* плашка с замком поверх размытого персонажа — по центру изображения */
 .res-lock {
   position: absolute; inset: 0 0 8%; z-index: 1; margin: auto; width: fit-content; height: fit-content; /* по центру без translate — он занят анимацией появления */
