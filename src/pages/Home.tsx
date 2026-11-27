@@ -41,6 +41,7 @@ function useHeroScroll(ref: React.RefObject<HTMLElement>) {
       el.style.setProperty('--hp', p.toFixed(4))
       // hero выше экрана (телефон) — прилипает, когда показан его низ, чтобы карточки внизу успели прочитаться
       el.style.top = `${Math.min(0, window.innerHeight - h)}px`
+      el.classList.toggle('is-covered', window.scrollY >= h) // следующая секция уже целиком поверх hero
     }
     const on = () => { if (!raf) raf = requestAnimationFrame(update) }
     update()
