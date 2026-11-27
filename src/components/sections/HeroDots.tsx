@@ -156,21 +156,28 @@ export default function HeroDots({ className = '', accent = false }: { className
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4)
     }
 
-    let raf = 0, running = false
+    // Рисуем, только когда фон реально виден: он в пределах экрана, вкладка открыта
+    // и hero не закрыт целиком следующей секцией (класс is-covered ставит главная, см. useHeroScroll).
+    // Прилипший hero браузер считает видимым, даже когда «Экосистема» полностью его закрыла.
+    let raf = 0, running = false, inView = false
+    const section = host.closest('section')
+    const covered = () => !!section?.classList.contains('is-covered')
     const loop = (now: number) => { draw(now); raf = requestAnimationFrame(loop) }
     const play = () => { if (!running && !reduced) { running = true; raf = requestAnimationFrame(loop) } }
     const stop = () => { running = false; cancelAnimationFrame(raf) }
+    const sync = () => (inView && !document.hidden && !covered() ? play() : stop())
 
     resize(); draw(performance.now())
     const ro = new ResizeObserver(() => { resize(); if (!running) draw(performance.now()) })
     ro.observe(host)
-    const io = new IntersectionObserver(([e]) => (e.isIntersecting ? play() : stop()))
+    const io = new IntersectionObserver(([e]) => { inView = e.isIntersecting; sync() })
     io.observe(host)
-    const onVis = () => (document.hidden ? stop() : play())
-    document.addEventListener('visibilitychange', onVis)
+    const mo = new MutationObserver(sync)
+    if (section) mo.observe(section, { attributes: true, attributeFilter: ['class'] })
+    document.addEventListener('visibilitychange', sync)
     return () => {
-      stop(); ro.disconnect(); io.disconnect()
-      document.removeEventListener('visibilitychange', onVis)
+      stop(); ro.disconnect(); io.disconnect(); mo.disconnect()
+      document.removeEventListener('visibilitychange', sync)
       // контекст не сбрасываем: в режиме разработки эффект запускается дважды на том же canvas
     }
   }, [accent])

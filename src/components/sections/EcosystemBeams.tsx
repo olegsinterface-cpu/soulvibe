@@ -2,6 +2,7 @@ import { forwardRef, useEffect, useLayoutEffect, useRef, useState, type CSSPrope
 import { asset } from '../../router'
 import './ecosystem-beams.css'
 import { SolarIcon } from '../ui/SolarIcon'
+import { pathLut } from '../ui/pathLut'
 import { SHINE } from '../ui/shine'
 import { triggerEdgeGlow } from '../ui/edgeGlow'
 
@@ -158,14 +159,15 @@ export default function EcosystemBeams() {
   // импульса — так цвет течёт гладко и повторяет изгибы.
   useEffect(() => {
     const svg = svgRef.current
-    if (!svg || !paths.length) return
-    // участки линии i: базовые пути, импульсы и градиенты — по атрибутам data-i / data-k
+    const root = container.current
+    if (!svg || !root || !paths.length) return
+    // участки линии i: базовые пути (в нижнем, неподвижном слое), импульсы и градиенты — по атрибутам data-i / data-k
     const q = <T extends Element>(sel: string, i: number) =>
-      [...svg.querySelectorAll<T>(`${sel}[data-i="${i}"]`)].sort((a, b) => Number(a.getAttribute('data-k')) - Number(b.getAttribute('data-k')))
+      [...root.querySelectorAll<T>(`${sel}[data-i="${i}"]`)].sort((a, b) => Number(a.getAttribute('data-k')) - Number(b.getAttribute('data-k')))
     const lines = paths.map((_, i) => {
       const segs = q<SVGPathElement>('.beam-base', i)
       const lens = segs.map((b) => b.getTotalLength())
-      return { segs, lens, len: lens.reduce((x, y) => x + y, 0), pulses: q<SVGPathElement>('.beam-pulse', i), grads: q<SVGLinearGradientElement>('.beam-pulse-grad', i) }
+      return { segs, lens, luts: segs.map((b, k) => pathLut(b, lens[k])), len: lens.reduce((x, y) => x + y, 0), pulses: q<SVGPathElement>('.beam-pulse', i), grads: q<SVGLinearGradientElement>('.beam-pulse-grad', i) }
     })
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
 
@@ -182,19 +184,6 @@ export default function EcosystemBeams() {
       node.style.setProperty('--hit-y', `${end.y - (nr.top - cr.top)}px`)
     })
     const lastHit = lines.map(() => -1)
-    // Точка на линии; за её концами — продолжение по касательной, чтобы градиент не сжимался на входе и выходе
-    const pointAt = (b: SVGPathElement, len: number, p: number) => {
-      if (p < 0) {
-        const a = b.getPointAtLength(0), c = b.getPointAtLength(Math.min(1, len))
-        return { x: a.x + (c.x - a.x) * p, y: a.y + (c.y - a.y) * p }
-      }
-      if (p > len) {
-        const a = b.getPointAtLength(len), c = b.getPointAtLength(Math.max(0, len - 1))
-        const e = p - len
-        return { x: a.x + (a.x - c.x) * e, y: a.y + (a.y - c.y) * e }
-      }
-      return b.getPointAtLength(p)
-    }
 
     let raf = 0
     let running = false
@@ -221,8 +210,8 @@ export default function EcosystemBeams() {
         const tail = head - total
         // импульс — по каждому участку свой штрих: на стыке он переходит из одного цвета в другой
         let offset = 0
-        L.segs.forEach((seg, k) => {
-          const pulse = L.pulses[k], grad = L.grads[k], sl = L.lens[k]
+        L.segs.forEach((_, k) => {
+          const pulse = L.pulses[k], grad = L.grads[k], sl = L.lens[k], at = L.luts[k]
           const h = head - offset, tl = tail - offset
           offset += sl
           if (!pulse || !grad) return
@@ -230,7 +219,7 @@ export default function EcosystemBeams() {
           pulse.style.opacity = '1'
           pulse.style.strokeDasharray = `${total} ${sl * 3 + total}`
           pulse.style.strokeDashoffset = `${-tl}`
-          const p0 = pointAt(seg, sl, tl), p1 = pointAt(seg, sl, h)
+          const p0 = at(tl), p1 = at(h) // точки хвоста и головы — из таблицы, см. ui/pathLut
           grad.setAttribute('x1', `${p0.x}`); grad.setAttribute('y1', `${p0.y}`)
           grad.setAttribute('x2', `${p1.x}`); grad.setAttribute('y2', `${p1.y}`)
         })
@@ -254,7 +243,18 @@ export default function EcosystemBeams() {
       role="img"
       aria-label="Схема экосистемы SoulVibe: общая основа — методология и игровая философия; направления — личный путь, идеи и команды, развитие экосистемы"
     >
-      <svg ref={svgRef} className="beams-svg" width={w} height={h} viewBox={`0 0 ${w || 1} ${h || 1}`} aria-hidden="true">
+      {/* Два слоя: снизу неподвижные линии со свечением, сверху импульсы.
+          Импульсы меняются каждый кадр; в отдельном слое браузер перерисовывает только их,
+          а линии со свечением (тени — дорогая операция) рисуются один раз. */}
+      <svg className="beams-svg" width={w} height={h} viewBox={`0 0 ${w || 1} ${h || 1}`} aria-hidden="true">
+        {/* is-accent — участок от логотипа до плашки направления: в фирменном цвете */}
+        <g className="beam-glow">
+          {paths.flatMap((parts, i) => parts.map((d, k) => (
+            <path key={`${i}-${k}`} d={d} className={`beam-base${parts.length > 1 && k === 0 ? ' is-accent' : ''}`} data-i={i} data-k={k} pathLength={1} style={nodeVars(i)} />
+          )))}
+        </g>
+      </svg>
+      <svg ref={svgRef} className="beams-svg is-pulses" width={w} height={h} viewBox={`0 0 ${w || 1} ${h || 1}`} aria-hidden="true">
         <defs>
           {/* Профиль блика кнопки в шапке: прозрачно → edge → mid → core → mid → edge → прозрачно */}
           {/* Профиль блика: участок до плашки направления — фирменный (как блик кнопки в шапке),
@@ -276,12 +276,6 @@ export default function EcosystemBeams() {
             )
           }))}
         </defs>
-        {/* is-accent — участок от логотипа до плашки направления: в фирменном цвете */}
-        <g className="beam-glow">
-          {paths.flatMap((parts, i) => parts.map((d, k) => (
-            <path key={`${i}-${k}`} d={d} className={`beam-base${parts.length > 1 && k === 0 ? ' is-accent' : ''}`} data-i={i} data-k={k} pathLength={1} style={nodeVars(i)} />
-          )))}
-        </g>
         {paths.flatMap((parts, i) => parts.map((d, k) => (
           <path key={`p${i}-${k}`} d={d} className={`beam-pulse${parts.length > 1 && k === 0 ? ' is-accent' : ''}`} data-i={i} data-k={k} stroke={`url(#beam-pulse-grad-${i}-${k})`} style={nodeVars(i)} />
         )))}

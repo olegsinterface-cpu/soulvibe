@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { asset } from '../../router'
 import { SHINE } from '../ui/shine'
 import './talent-map.css'
+import { pathLut } from '../ui/pathLut'
 
 /* «Карта талантов» — по схеме заказчика, в стиле схемы экосистемы.
    Слева путь идеи (6 шагов), справа карта: в центре «Идея», вокруг 6 талантов.
@@ -61,6 +62,18 @@ const wavePath = (() => {
   return d
 })()
 
+/* Неподвижная часть шара — светящийся ободок и блик. Рисуется в нижнем слое схемы один раз:
+   двойная тень ободка — дорогая операция, а в слое с анимацией она пересчитывалась бы каждый кадр */
+function OrbRim({ x, y, r, color, order = 0 }: { x: number; y: number; r: number; color: string; order?: number }) {
+  return (
+    <g transform={`translate(${x} ${y}) scale(${r / 24})`} style={{ color }}>
+      <g className="tmap-orb-pop" style={{ ['--o' as string]: order } as React.CSSProperties}>
+        <circle r="24" className="tmap-orb-rim" />
+      </g>
+    </g>
+  )
+}
+
 /* Сгусток энергии: тёмная стеклянная сфера со светящимся ободком, внутри вращаются цветные всполохи,
    в центре дышит белое ядро. Нарисован в радиусе 24 и масштабируется под нужный размер. */
 function EnergyOrb({ uid, x, y, r, color, delay = 0, order = 0 }: { uid: string; x: number; y: number; r: number; color: string; delay?: number; order?: number }) {
@@ -89,29 +102,31 @@ function EnergyOrb({ uid, x, y, r, color, delay = 0, order = 0 }: { uid: string;
           <stop offset="0.35" stopColor="#fff" stopOpacity="0.85" />
           <stop offset="1" stopColor="#fff" stopOpacity="0" />
         </radialGradient>
-        <filter id={`${uid}-blur`} x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="2" /></filter>
         <clipPath id={`${uid}-clip`}><circle r="23" /></clipPath>
       </defs>
       {/* появление: шар «вспыхивает» из точки (см. tmap.is-in) */}
       <g className="tmap-orb-pop" style={{ ['--o' as string]: order } as React.CSSProperties}>
       <circle r="48" fill={`url(#${uid}-halo)`} className="tmap-orb-halo" style={anim} />
-      <circle r="24" fill="#15181b" />
-      <circle r="24" fill={`url(#${uid}-body)`} />
+      {/* тело чуть меньше ободка (r 24, толщина 1.4): ободок лежит в нижнем слое и должен оставаться видимым целиком */}
+      <circle r="23.3" fill="#15181b" />
+      <circle r="23.3" fill={`url(#${uid}-body)`} />
       <g clipPath={`url(#${uid}-clip)`}>
         {/* Всполохи вращаются в разные стороны; прозрачный круг держит центр вращения */}
-        <g className="tmap-swirl" style={anim} filter={`url(#${uid}-blur)`}>
+        {/* Размытие всполохов не нужно: заливка — радиальный градиент, края и так мягкие.
+            Фильтр размытия на вращающемся слое пересчитывался бы каждый кадр у каждого шара */}
+        <g className="tmap-swirl" style={anim}>
           <circle r="24" fill="none" />
           <ellipse cx="-9" cy="-4" rx="13" ry="6" fill={wisp} transform="rotate(-30 -9 -4)" />
           <ellipse cx="8" cy="7" rx="12" ry="5" fill={wisp} transform="rotate(25 8 7)" />
         </g>
-        <g className="tmap-swirl is-rev" style={anim} filter={`url(#${uid}-blur)`}>
+        <g className="tmap-swirl is-rev" style={anim}>
           <circle r="24" fill="none" />
           <ellipse cx="6" cy="-10" rx="10" ry="4" fill={wisp} transform="rotate(15 6 -10)" />
           <ellipse cx="-6" cy="11" rx="9" ry="4" fill={wisp} transform="rotate(-20 -6 11)" />
         </g>
       </g>
-      <circle r="9" fill={`url(#${uid}-core)`} className="tmap-core" style={anim} />
-      <circle r="24" className="tmap-orb-rim" />
+      <circle r="11" fill={`url(#${uid}-core)`} className="tmap-core" style={anim} /> {/* чуть крупнее вместо тени-свечения */}
+      {/* ободок — в нижнем слое, см. OrbRim; поверх тёмного тела проступает его внешнее свечение */}
       <ellipse cx="-8" cy="-13" rx="7" ry="3.5" fill="#fff" opacity="0.22" transform="rotate(-30 -8 -13)" />
       </g>
     </g>
@@ -167,22 +182,10 @@ function usePulses(root: React.RefObject<HTMLElement>) {
       // первая точка — начало линии: до первого шара импульс акцентного цвета
       colors: path.dataset.colors ? path.dataset.colors.split(',').map(hexRgb) : null,
       marks: path.dataset.points ? lengthsAt(path, path.dataset.points) : [],
-    }))
+    })).map((it) => ({ ...it, at: pathLut(it.path, it.len) })) // точки на линии — из таблицы, см. ui/pathLut
     const stopsOf = (g: SVGLinearGradientElement | null) =>
       g ? [...g.querySelectorAll('stop')].filter((st) => st.getAttribute('offset') !== '0.5') : []
     const stops = items.map((it) => (it.colors ? stopsOf(it.grad) : []))
-    const pointAt = (b: SVGPathElement, len: number, p: number) => {
-      if (p < 0) {
-        const a = b.getPointAtLength(0), c = b.getPointAtLength(Math.min(1, len))
-        return { x: a.x + (c.x - a.x) * p, y: a.y + (c.y - a.y) * p }
-      }
-      if (p > len) {
-        const a = b.getPointAtLength(len), c = b.getPointAtLength(Math.max(0, len - 1))
-        const e = p - len
-        return { x: a.x + (a.x - c.x) * e, y: a.y + (a.y - c.y) * e }
-      }
-      return b.getPointAtLength(p)
-    }
     let raf = 0, running = false
     const start = performance.now()
     const frame = (now: number) => {
@@ -211,7 +214,7 @@ function usePulses(root: React.RefObject<HTMLElement>) {
           const css = `rgb(${c.join(',')})`
           for (const st of stops[items.indexOf(it)]) st.setAttribute('stop-color', css)
         }
-        const p0 = pointAt(it.path, it.len, tail), p1 = pointAt(it.path, it.len, head)
+        const p0 = it.at(tail), p1 = it.at(head)
         it.grad.setAttribute('x1', `${p0.x}`); it.grad.setAttribute('y1', `${p0.y}`)
         it.grad.setAttribute('x2', `${p1.x}`); it.grad.setAttribute('y2', `${p1.y}`)
       }
@@ -253,8 +256,12 @@ export default function TalentMap({ withPath = true, withRoles = true }: { withP
       <div className="tmap-path">
         <span className="tmap-pill">Идея</span>
         <div className="tmap-wave" style={{ height: WAVE_H }}>
+          {/* неподвижная линия со свечением — отдельно от импульса и шаров, которые меняются каждый кадр */}
           <svg viewBox={`0 0 320 ${WAVE_H}`} width="320" height={WAVE_H} aria-hidden="true">
             <path d={wavePath} className="tmap-line tmap-glow" pathLength={1} />
+            {STEPS.map((s, i) => <OrbRim key={s.text} x={ringX(i)} y={ringY(i)} r={13} color={s.color} order={i} />)}
+          </svg>
+          <svg viewBox={`0 0 320 ${WAVE_H}`} width="320" height={WAVE_H} aria-hidden="true" className="tmap-live">
             <defs><PulseGrad id="tm-pulse-wave" color={SHINE.mid} /></defs>
             <path d={wavePath} className="tmap-pulse" stroke="url(#tm-pulse-wave)"
               data-grad="tm-pulse-wave" data-size="120" data-travel="3.8" data-cycle="5"
@@ -278,16 +285,9 @@ export default function TalentMap({ withPath = true, withRoles = true }: { withP
       {/* Карта талантов */}
       <div className="tmap-map">
         <div className="tmap-canvas" style={{ aspectRatio: `${W} / ${H}` }}>
+          {/* Два слоя: снизу неподвижные сетка и линии со свечением (рисуются один раз),
+              сверху импульсы, центр и шары — то, что меняется каждый кадр */}
           <svg viewBox={`0 0 ${W} ${H}`} aria-hidden="true">
-            <defs>
-              {NODES.map((n) => <PulseGrad key={n.id} id={`tm-pulse-${n.id}`} color={n.color} />)}
-              <radialGradient id="tm-hub" cx="50%" cy="50%" r="50%">
-                <stop offset="0" stopColor="#bdffff" stopOpacity="0.45" />
-                <stop offset="0.45" stopColor="#1787b3" stopOpacity="0.28" />
-                <stop offset="1" stopColor="#1787b3" stopOpacity="0" />
-              </radialGradient>
-            </defs>
-
             {/* Каркас: сетка и рамки через узлы */}
             <g className="tmap-grid">
               {[150, 280, 430, 580, 710].map((x) => <line key={`v${x}`} x1={x} y1="60" x2={x} y2="540" />)}
@@ -301,6 +301,17 @@ export default function TalentMap({ withPath = true, withRoles = true }: { withP
               <path d={`M580,150 Q${HUB.x},${HUB.y} 280,450`} pathLength={1} />
               {NODES.map((n) => <path key={n.id} d={link(n)} pathLength={1} />)}
             </g>
+            {NODES.map((n, i) => <OrbRim key={n.id} x={n.x} y={n.y} r={24} color={n.color} order={i} />)}
+          </svg>
+          <svg viewBox={`0 0 ${W} ${H}`} aria-hidden="true" className="tmap-live">
+            <defs>
+              {NODES.map((n) => <PulseGrad key={n.id} id={`tm-pulse-${n.id}`} color={n.color} />)}
+              <radialGradient id="tm-hub" cx="50%" cy="50%" r="50%">
+                <stop offset="0" stopColor="#bdffff" stopOpacity="0.45" />
+                <stop offset="0.45" stopColor="#1787b3" stopOpacity="0.28" />
+                <stop offset="1" stopColor="#1787b3" stopOpacity="0" />
+              </radialGradient>
+            </defs>
             {/* Импульсы от центра к узлам — цветом узла */}
             {NODES.map((n, i) => (
               <path key={n.id} d={link(n)} className="tmap-pulse" stroke={`url(#tm-pulse-${n.id})`}
