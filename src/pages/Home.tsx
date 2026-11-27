@@ -34,20 +34,27 @@ function useHeroScroll(ref: React.RefObject<HTMLElement>) {
     const el = ref.current
     if (!el || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
     let raf = 0
+    // высоту и отступ прилипания считаем только при изменении размеров, а не на каждом кадре прокрутки:
+    // чтение offsetHeight после записи стилей заставляет браузер пересчитывать раскладку — на телефоне это рывки
+    let h = 1, top = '', covered = false, lastP = ''
+    const measure = () => {
+      h = el.offsetHeight || 1
+      const t = `${Math.min(0, window.innerHeight - h)}px` // hero выше экрана (телефон) — прилипает, когда показан его низ
+      if (t !== top) { top = t; el.style.top = t }
+    }
     const update = () => {
       raf = 0
-      const h = el.offsetHeight || 1
-      const p = Math.min(1, Math.max(0, window.scrollY / h))
-      el.style.setProperty('--hp', p.toFixed(4))
-      // hero выше экрана (телефон) — прилипает, когда показан его низ, чтобы карточки внизу успели прочитаться
-      el.style.top = `${Math.min(0, window.innerHeight - h)}px`
-      el.classList.toggle('is-covered', window.scrollY >= h) // следующая секция уже целиком поверх hero
+      const p = Math.min(1, Math.max(0, window.scrollY / h)).toFixed(3)
+      if (p !== lastP) { lastP = p; el.style.setProperty('--hp', p) }
+      const c = window.scrollY >= h // следующая секция уже целиком поверх hero
+      if (c !== covered) { covered = c; el.classList.toggle('is-covered', c) }
     }
     const on = () => { if (!raf) raf = requestAnimationFrame(update) }
-    update()
+    const onResize = () => { measure(); on() }
+    measure(); update()
     window.addEventListener('scroll', on, { passive: true })
-    window.addEventListener('resize', on)
-    return () => { cancelAnimationFrame(raf); window.removeEventListener('scroll', on); window.removeEventListener('resize', on) }
+    window.addEventListener('resize', onResize)
+    return () => { cancelAnimationFrame(raf); window.removeEventListener('scroll', on); window.removeEventListener('resize', onResize) }
   }, [ref])
 }
 

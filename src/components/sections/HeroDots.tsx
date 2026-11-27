@@ -140,7 +140,7 @@ export default function HeroDots({ className = '', accent = false }: { className
     let dpr = 1
     const resize = () => {
       const r = host.getBoundingClientRect()
-      dpr = Math.min(window.devicePixelRatio || 1, 2)
+      dpr = Math.min(window.devicePixelRatio || 1, r.width < 640 ? 1.5 : 2) // на телефоне — меньше пикселей на кадр, точки крупные, разницы не видно
       canvas.width = Math.round(r.width * dpr); canvas.height = Math.round(r.height * dpr)
       canvas.style.width = `${r.width}px`; canvas.style.height = `${r.height}px`
       gl.viewport(0, 0, canvas.width, canvas.height)

@@ -294,7 +294,14 @@ button, input { font: inherit; color: inherit; }
    за край секции из-за overflow-x: clip, и граница становится резкой. */
 .hero-stack > .hero { position: sticky; z-index: 0; overflow: clip; } /* clip по обеим осям: точки фона не вылезают ниже hero */
 .hero-stack > .hero.is-covered { visibility: hidden; } /* hero полностью закрыт — не просвечивает под следующими секциями */
-.hero-stack > .hero + .section { z-index: 1; background: linear-gradient(to bottom, rgba(29, 31, 33, 0), var(--bg) 140px); }
+/* Переход занимает только верхний отступ секции: к началу текста фон уже сплошной, и hero под заголовком не просвечивает */
+.hero-stack > .hero + .section {
+  --fade: 104px; z-index: 1; padding-top: calc(var(--fade) + 16px);
+  background: linear-gradient(to bottom, rgba(29, 31, 33, 0), var(--bg) var(--fade));
+}
+@media (max-width: 860px) { .hero-stack > .hero + .section { --fade: 72px; } }
+/* телефон: карточки hero стоят столбиком — при уходе не разъезжаются в стороны, а только гаснут */
+@media (max-width: 560px) { .hero-stack .hero-anim .hero-terms > div { translate: none; } } /* выше специфичность — правило стоит раньше основного */
 
 .hero-text { display: flex; flex-direction: column; justify-content: flex-end; padding: 56px 0 8px; }
 
@@ -1111,8 +1118,6 @@ p, li, dd, blockquote, figcaption { text-wrap: pretty; }
    Появление — keyframes с fill-mode backwards: после окончания свойства отдаются обычным стилям,
    поэтому прокрутка (translate / opacity от --hp) не конфликтует с анимацией. */
 .hero-anim { --hp: 0; }
-/* на телефоне hero занимает весь экран и заголовок наверху — он гаснет позже, когда «Экосистема» уже подъехала */
-@media (max-width: 560px) { .hero-anim { --hp-start: 0.3; } }
 @keyframes ha-rise { from { opacity: 0; transform: translateY(28px) scale(0.985); filter: blur(12px); } to { opacity: 1; transform: none; filter: blur(0); } }
 @keyframes ha-up { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
 @keyframes ha-fade { from { opacity: 0; } to { opacity: 1; } }
@@ -1133,7 +1138,7 @@ p, li, dd, blockquote, figcaption { text-wrap: pretty; }
 /* Заголовок уходит по буквам, как во второй части эффекта Moving Letters #12: буквы по очереди сдвигаются влево и гаснут.
    Прогресс каждой буквы привязан к прокрутке, при возврате наверх буквы возвращаются */
 .hero-anim .ha-ch {
-  --lp: clamp(0, (var(--hp) - var(--hp-start, 0.12) - var(--c) * var(--step, 0.004)) * 3.5, 1); /* гаснет, пока «Экосистема» наезжает сверху */
+  --lp: clamp(0, (var(--hp) - 0.12 - var(--c) * var(--step, 0.004)) * 3.5, 1); /* гаснет, пока «Экосистема» наезжает сверху */
   translate: calc(var(--lp) * -30px) 0;
   opacity: calc(1 - var(--lp));
 }
@@ -1150,6 +1155,17 @@ p, li, dd, blockquote, figcaption { text-wrap: pretty; }
   translate: calc((var(--i) - 1) * var(--hp) * 320px) 0;
   scale: calc(1 - var(--hp) * 0.18);
   opacity: calc(1 - clamp(0, (var(--hp) - 0.1) * 1.8, 1));
+}
+
+/* Слои, которые двигаются при прокрутке, — заранее на отдельных слоях видеокарты */
+.hero-anim .hero-dots, .hero-anim h1, .hero-anim .hero-lead, .hero-anim .hero-actions > *, .hero-anim .hero-terms > div { will-change: translate, scale, opacity; }
+/* Телефон: облегчённый уход hero, чтобы прокрутка была плавной.
+   — заголовок и подзаголовок гаснут целиком, а не по буквам (сотни букв пересчитывались бы на каждом кадре);
+   — у карточек нет размытия подложки: размытие под движущимся слоем на телефоне дорогое */
+@media (max-width: 560px) {
+  .hero-anim .ha-ch { translate: none; opacity: 1; }
+  .hero-anim h1, .hero-anim .hero-lead { opacity: calc(1 - clamp(0, (var(--hp) - 0.3) * 2.5, 1)); }
+  .hero-terms > div { -webkit-backdrop-filter: none; backdrop-filter: none; background: rgb(36, 39, 41); }
 }
 
 @media (prefers-reduced-motion: reduce) {
