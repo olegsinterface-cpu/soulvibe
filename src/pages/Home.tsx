@@ -39,6 +39,8 @@ function useHeroScroll(ref: React.RefObject<HTMLElement>) {
       const h = el.offsetHeight || 1
       const p = Math.min(1, Math.max(0, window.scrollY / h))
       el.style.setProperty('--hp', p.toFixed(4))
+      // hero выше экрана (телефон) — прилипает, когда показан его низ, чтобы карточки внизу успели прочитаться
+      el.style.top = `${Math.min(0, window.innerHeight - h)}px`
     }
     const on = () => { if (!raf) raf = requestAnimationFrame(update) }
     update()
@@ -117,22 +119,6 @@ function Ecosystem() {
         </div>
 
         <EcosystemBeams />
-
-        {/* Переходы: при уходе вверх разлетаются в стороны и гаснут */}
-        <div className="jumps" data-sp>
-          <Link to="/#format-mentor" className="jump">
-            <div><span className="mono">для себя</span><b>Личный формат</b></div>
-            <span className="go"><Arrow /></span>
-          </Link>
-          <Link to="/#format-soulmind" className="jump">
-            <div><span className="mono">для идеи и команды</span><b>Программы для идей и команд</b></div>
-            <span className="go"><Arrow /></span>
-          </Link>
-          <Link to="/#brands" className="jump">
-            <div><span className="mono">для брендов</span><b>Сотрудничество</b></div>
-            <span className="go"><Arrow /></span>
-          </Link>
-        </div>
       </div>
     </section>
   )
@@ -400,8 +386,11 @@ function Contacts() {
 export default function Home() {
   return (
     <>
-      <Hero />
-      <Ecosystem />
+      {/* Hero прилипает к верху экрана, а «Экосистема» наезжает на него снизу — между ними нет пустого экрана */}
+      <div className="hero-stack">
+        <Hero />
+        <Ecosystem />
+      </div>
       {/* Вариант секции: ?role=1 — прежний (блоки), по умолчанию — веер карточек */}
       {new URLSearchParams(window.location.search).get('role') === '1' ? <RoleCharacter /> : <RoleFan />}
       <PhilosophyAir />

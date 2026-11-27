@@ -257,7 +257,7 @@ export default function TalentMap({ withPath = true, withRoles = true }: { withP
             <path d={wavePath} className="tmap-line tmap-glow" pathLength={1} />
             <defs><PulseGrad id="tm-pulse-wave" color={SHINE.mid} /></defs>
             <path d={wavePath} className="tmap-pulse" stroke="url(#tm-pulse-wave)"
-              data-grad="tm-pulse-wave" data-size="120" data-travel="6" data-cycle="8"
+              data-grad="tm-pulse-wave" data-size="120" data-travel="3.8" data-cycle="5"
               data-colors={['#bdffff', ...STEPS.map((x) => x.color)].join(',')}
               data-points={[`${XR},0`, ...STEPS.map((_, i) => `${ringX(i)},${ringY(i)}`)].join(';')} />
             {STEPS.map((s, i) => (
@@ -304,7 +304,7 @@ export default function TalentMap({ withPath = true, withRoles = true }: { withP
             {/* Импульсы от центра к узлам — цветом узла */}
             {NODES.map((n, i) => (
               <path key={n.id} d={link(n)} className="tmap-pulse" stroke={`url(#tm-pulse-${n.id})`}
-                data-grad={`tm-pulse-${n.id}`} data-size="90" data-travel="2.4" data-cycle="4.8" data-delay={i * 0.8} />
+                data-grad={`tm-pulse-${n.id}`} data-size="90" data-travel="1.5" data-cycle="3" data-delay={i * 0.5} />
             ))}
 
             {/* Центр */}
