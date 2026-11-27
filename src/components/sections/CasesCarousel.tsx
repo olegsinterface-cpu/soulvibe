@@ -78,7 +78,7 @@ export default function CasesCarousel({ items }: { items: CaseCard[] }) {
       className={`cc cc-reveal${shown ? ' is-in' : ''}`}
       role="region"
       aria-roledescription="карусель"
-      aria-label="Примеры"
+      aria-label="Кейсы"
       onKeyDown={(e) => { if (e.key === 'ArrowLeft') prev(); if (e.key === 'ArrowRight') next() }}
     >
       {/* Якоря для ссылок /#case-…: прокрутка к карусели */}

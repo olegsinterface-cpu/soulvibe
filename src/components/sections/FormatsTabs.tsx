@@ -81,7 +81,7 @@ export default function FormatsTabs() {
       let raf = 0
       const update = () => {
         raf = 0
-        const slots = chatGhost.current?.querySelectorAll<HTMLElement>('.ft-msg')
+        const slots = chatGhost.current?.querySelectorAll<HTMLElement>('.ft-msg-in')
         if (!slots) return
         const line = window.innerHeight - REVEAL_OFFSET
         let n = 0
@@ -154,13 +154,13 @@ export default function FormatsTabs() {
         <article className="ft-panel" id="ft-panel" role="tabpanel" aria-labelledby={`ft-tab-${active}`} key={active}>
           <div className="ft-main ft-info">
             <div className="ft-top">
-              <span className="ft-eyebrow"><b className="gt">{f.name}</b><span>{f.kind}</span></span>
-              <Link to={`/#${f.caseId}`} className="ft-case-chip" aria-label={f.caseLabel}>Пример <Arrow size={14} /></Link>
+              <span className="ft-eyebrow"><b className="gt">{f.name}</b>{f.kind && <span>{f.kind}</span>}</span>
+              <Link to={`/#${f.caseId}`} className="ft-case-chip" aria-label={f.caseLabel}>Кейс <Arrow size={14} /></Link>
             </div>
             <h3>{f.title}</h3>
             <dl className="ft-pair">
               {f.rows.slice(0, 2).map(([k, v]) => (
-                <div key={k}><dt>{k}</dt><dd>{v}</dd></div>
+                <div key={k}><dt>{k}</dt><dd>{Array.isArray(v) ? <ul className="ft-list">{v.map((x) => <li key={x}>{x}</li>)}</ul> : v}</dd></div>
               ))}
             </dl>
             <div className="ft-bottom">
@@ -182,14 +182,7 @@ export default function FormatsTabs() {
                   <div className="ft-chat is-ghost" aria-hidden="true" ref={chatGhost}>
                     {DIALOG.map((m, i) => (
                       <div key={i} className="ft-msg-wrap"><div className="ft-msg-in">
-                      <div className={`ft-msg ${m.from}`}>
-                        <span className="ft-avatar" aria-hidden="true">
-                          {m.from === 'user'
-                            ? <SolarIcon name="user" size={18} />
-                            : <span className="ft-avatar-mark"><img src={asset('/logo.svg')} alt="" /></span>}
-                        </span>
-                        <p className={`ft-bubble ${m.from}`}>{m.text}</p>
-                      </div>
+                      <ChatItem m={m} />
                       </div></div>
                     ))}
                   </div>
@@ -197,14 +190,7 @@ export default function FormatsTabs() {
                     {DIALOG.slice(0, msgCount).map((m, i) => (
                       // обёртка раскрывается по высоте снизу — прошлые сообщения плавно поднимаются
                       <GrowWrap key={i}><div className="ft-msg-in">
-                      <div className={`ft-msg ${m.from}`}>
-                        <span className="ft-avatar" aria-hidden="true">
-                          {m.from === 'user'
-                            ? <SolarIcon name="user" size={18} />
-                            : <span className="ft-avatar-mark"><img src={asset('/logo.svg')} alt="" /></span>}
-                        </span>
-                        <p className={`ft-bubble ${m.from}`}>{m.text}</p>
-                      </div>
+                      <ChatItem m={m} />
                       </div></GrowWrap>
                     ))}
                   </div>
@@ -252,6 +238,21 @@ function useInViewEl(node: HTMLElement | null, threshold: number, rootMargin = '
     return () => io.disconnect()
   }, [node, ref, threshold, rootMargin])
   return inView
+}
+
+/** Элемент чата: метка времени дня («Утро», «Вечер») или сообщение с аватаром */
+function ChatItem({ m }: { m: (typeof DIALOG)[number] }) {
+  if (m.from === 'time') return <span className="ft-time">{m.text}</span>
+  return (
+    <div className={`ft-msg ${m.from}`}>
+      <span className="ft-avatar" aria-hidden="true">
+        {m.from === 'user'
+          ? <SolarIcon name="user" size={18} />
+          : <span className="ft-avatar-mark"><img src={asset('/logo.svg')} alt="" /></span>}
+      </span>
+      <p className={`ft-bubble ${m.from}`}>{m.text}</p>
+    </div>
+  )
 }
 
 /** Новое сообщение в чате: место под него плавно раскрывается по высоте, соседние сообщения сдвигаются без рывков.

@@ -1,6 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, asset } from '../../router'
 import { NAV } from '../../content'
+
+/* В шапке — без «Игровой философии» (в подвале пункт остаётся) */
+const HEADER_NAV = NAV.filter((n) => n.id !== 'philosophy')
 import { ShinyButton } from '../ui/ShinyButton'
 
 export default function Header() {
@@ -66,7 +69,7 @@ export default function Header() {
             <img src={asset('/logo.svg')} alt="SoulVibe" className="logo-img" />
           </Link>
           <nav className="nav" aria-label="Разделы">
-            {NAV.map((n) => (
+            {HEADER_NAV.map((n) => (
               <Link key={n.id} to={`/#${n.id}`}>{n.label}</Link>
             ))}
           </nav>
@@ -82,7 +85,7 @@ export default function Header() {
           </button>
         </div>
         <div id="mobile-menu" className={`mobile-menu${open ? ' open' : ''}`}>
-          {NAV.map((n) => (
+          {HEADER_NAV.map((n) => (
             <Link key={n.id} to={`/#${n.id}`} className="m-item" onClick={close}>
               {n.label}
             </Link>

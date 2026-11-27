@@ -15,16 +15,24 @@ const I = {
   experts: <SolarIcon name="star" size={20} />,
 }
 
-/* Цвета направлений — из карты талантов: личный путь — «Видение», идеи и команды — «Креатив»,
-   развитие экосистемы — «Стратегия». Центр (общая основа) остаётся фирменным акцентом. */
-const GROUP_COLOR = ['#5b6cff', '#ff4d5e', '#ffd23f'] as const
+/* Цвета блоков — шесть цветов карты талантов, по блоку на цвет:
+   личный путь — Визионер и Управленец, идеи и команды — Новатор и Продюсер,
+   развитие экосистемы — Стратег и Коммуникатор. Плашка группы — переходом из цвета левого блока в цвет правого.
+   Центр (общая основа) и участки от него до плашек — фирменный акцент. */
+const NODE_COLOR = ['#5b6cff', '#9fd8ff', '#ff4d5e', '#ff8a3d', '#ffd23f', '#3ddc84'] as const
 /** Светлая середина блика: цвет направления, смешанный с белым */
 const tint = (c: string, t = 0.55) => {
   const [r, g, b] = [1, 3, 5].map((i) => parseInt(c.slice(i, i + 2), 16))
   const m = (v: number) => Math.round(v + (255 - v) * t).toString(16).padStart(2, '0')
   return `#${m(r)}${m(g)}${m(b)}`
 }
-const groupVars = (g: number) => ({ '--bc': GROUP_COLOR[g], '--bc-mid': tint(GROUP_COLOR[g]) }) as CSSProperties
+/** Переменные цвета для блока / его линии */
+const nodeVars = (i: number) => ({ '--bc': NODE_COLOR[i], '--bc-mid': tint(NODE_COLOR[i]) }) as CSSProperties
+/** Переменные для плашки группы: два цвета её блоков */
+const groupVars = (g: number) => {
+  const [a, b] = GROUP_OF.flatMap((gg, i) => (gg === g ? [NODE_COLOR[i]] : []))
+  return { '--bc-a': a, '--bc-b': b ?? a } as CSSProperties
+}
 
 /* Тайминг энергии: один цикл луча и сдвиг между лучами */
 const BEAM_DURATION = 4
@@ -34,10 +42,10 @@ const PULSE_LENGTH = 90
 /** Доля цикла, за которую импульс проходит линию; остальное — пауза */
 const BEAM_TRAVEL = 0.6
 
-type NodeProps = { icon: ReactNode; title: string; caption: string; status?: string; group: number }
+type NodeProps = { icon: ReactNode; title: string; caption: string; status?: string; index: number }
 
-const Node = forwardRef<HTMLDivElement, NodeProps>(({ icon, title, caption, status, group }, ref) => (
-  <div ref={ref} className="bnode edge-glow" style={groupVars(group)}>
+const Node = forwardRef<HTMLDivElement, NodeProps>(({ icon, title, caption, status, index }, ref) => (
+  <div ref={ref} className="bnode edge-glow" style={nodeVars(index)}>
     <span className="bnode-ico" aria-hidden="true">{icon}</span>
     <div>
       <h4>{title}</h4>
@@ -253,7 +261,7 @@ export default function EcosystemBeams() {
               после плашки — в цвете направления: край — цвет, середина светлее, центр белый */}
           {paths.flatMap((parts, i) => parts.map((_, k) => {
             const accent = parts.length > 1 && k === 0
-            const edge = accent ? SHINE.edge : GROUP_COLOR[GROUP_OF[i]]
+            const edge = accent ? SHINE.edge : NODE_COLOR[i]
             const mid = accent ? SHINE.mid : tint(edge)
             return (
               <linearGradient key={`${i}-${k}`} id={`beam-pulse-grad-${i}-${k}`} className="beam-pulse-grad" data-i={i} data-k={k} gradientUnits="userSpaceOnUse">
@@ -271,11 +279,11 @@ export default function EcosystemBeams() {
         {/* is-accent — участок от логотипа до плашки направления: в фирменном цвете */}
         <g className="beam-glow">
           {paths.flatMap((parts, i) => parts.map((d, k) => (
-            <path key={`${i}-${k}`} d={d} className={`beam-base${parts.length > 1 && k === 0 ? ' is-accent' : ''}`} data-i={i} data-k={k} pathLength={1} style={groupVars(GROUP_OF[i])} />
+            <path key={`${i}-${k}`} d={d} className={`beam-base${parts.length > 1 && k === 0 ? ' is-accent' : ''}`} data-i={i} data-k={k} pathLength={1} style={nodeVars(i)} />
           )))}
         </g>
         {paths.flatMap((parts, i) => parts.map((d, k) => (
-          <path key={`p${i}-${k}`} d={d} className={`beam-pulse${parts.length > 1 && k === 0 ? ' is-accent' : ''}`} data-i={i} data-k={k} stroke={`url(#beam-pulse-grad-${i}-${k})`} style={groupVars(GROUP_OF[i])} />
+          <path key={`p${i}-${k}`} d={d} className={`beam-pulse${parts.length > 1 && k === 0 ? ' is-accent' : ''}`} data-i={i} data-k={k} stroke={`url(#beam-pulse-grad-${i}-${k})`} style={nodeVars(i)} />
         )))}
       </svg>
 
@@ -294,20 +302,20 @@ export default function EcosystemBeams() {
           развитие экосистемы — внизу по центру, на продолжении ствола */}
       <div className="beams-tree">
         <div className="tree-group" style={{ '--from': 1, '--span': 2 } as CSSProperties}>
-          <div className="tree-label" ref={g1} style={groupVars(0)}>Личный путь</div>
-          <Node ref={n1} group={0} icon={I.calc} title="Расчёт таланта" caption="бесплатно, на сайте · узнаёте роль" />
-          <Node ref={n2} group={0} icon={I.mentor} title="ИИ-ментор" caption="Telegram-бот · узнаёте персонажа" />
+          <div className="tree-label" ref={g1} style={groupVars(0)}><span>Личный путь</span></div>
+          <Node ref={n1} index={0} icon={I.calc} title="Расчёт таланта" caption="бесплатно, на сайте · узнаёте роль" />
+          <Node ref={n2} index={1} icon={I.mentor} title="ИИ-ментор" caption="Telegram-бот · узнаёте персонажа" />
         </div>
         <div className="tree-group" style={{ '--from': 4, '--span': 2 } as CSSProperties}>
-          <div className="tree-label" ref={g2} style={groupVars(1)}>Идеи и команды</div>
-          <Node ref={n3} group={1} icon={I.idea} title="SoulMind" caption="игра для идей · индивидуально или командой" />
-          <Node ref={n4} group={1} icon={I.team} title="Dream Team" caption="программа для собственников и руководителей" />
+          <div className="tree-label" ref={g2} style={groupVars(1)}><span>Идеи и команды</span></div>
+          <Node ref={n3} index={2} icon={I.idea} title="SoulMind" caption="симулятор идей · индивидуально или командой" />
+          <Node ref={n4} index={3} icon={I.team} title="Dream Team" caption="программа для собственников и руководителей" />
           <p className="beams-note">Мероприятия проходят в форматах SoulMind и Dream Team</p>
         </div>
         <div className="tree-group is-center" style={{ '--from': 1, '--span': 5 } as CSSProperties}>
-          <div className="tree-label" ref={g3} style={groupVars(2)}>Развитие экосистемы</div>
-          <Node ref={n5} group={2} icon={I.collab} title="Коллаборации с брендами" caption="украшения, ароматы, одежда и другие направления" status="Направление открыто для обсуждения" />
-          <Node ref={n6} group={2} icon={I.experts} title="Коллаборации с лидерами мнений, экспертами" caption="Совместные продукты и партнёрская программа с вознаграждением 50% за привлечённых пользователей." />
+          <div className="tree-label" ref={g3} style={groupVars(2)}><span>Развитие экосистемы</span></div>
+          <Node ref={n5} index={4} icon={I.collab} title="Коллаборации с брендами" caption="украшения, ароматы, одежда и другие направления" status="Направление открыто для обсуждения" />
+          <Node ref={n6} index={5} icon={I.experts} title="Коллаборации с лидерами мнений, экспертами" caption="Совместные продукты и партнёрская программа с вознаграждением 50% за привлечённых пользователей." />
         </div>
       </div>
     </div>

@@ -3,7 +3,7 @@ import { letters, useLetterGradient, useScrollParts } from '../components/ui/let
 import { Link, asset } from '../router'
 import {
   ABOUT_QUOTE, ABOUT_TITLE, CASE_CARDS, CASES_TITLE, CHARACTERS, CONTACTS_TITLE, HERO, LINKS,
-  PA_NOTE, PA_TITLE, PRINCIPLES, ROLE_CARD, ROLE_TABLE, SHIFTS, TERMS,
+  PA_NOTE, PA_SUB, PA_TITLE, PRINCIPLES, ROLE_CARD, ROLE_TABLE, SHIFTS, TERMS,
 } from '../content'
 import { Arrow, ArrowDown } from '../components/ui/Icons'
 import EcosystemBeams from '../components/sections/EcosystemBeams'
@@ -231,10 +231,13 @@ function PhilosophyAir() {
             <h2 className="sl" data-sp aria-label={PA_TITLE} style={{ ['--n' as string]: nChars(PA_TITLE) }}>
               <span aria-hidden="true">{letters(PA_TITLE, 0)}</span>
             </h2>
+            <p className="pa-sub sl" data-sp aria-label={PA_SUB} style={{ ['--n' as string]: nChars(PA_SUB) }}>
+              <span aria-hidden="true">{letters(PA_SUB, 0)}</span>
+            </p>
           </div>
           {/* Карта талантов — та же, что на странице расчёта, но без пути идеи */}
           <div className="pa-map">
-            <TalentMap withPath={false} />
+            <TalentMap withPath={false} withRoles={false} />
             <p className="pa-map-note sl" data-sp aria-label={PA_NOTE} style={{ ['--n' as string]: nChars(PA_NOTE) }}>
               <span aria-hidden="true">{letters(PA_NOTE, 0)}</span>
             </p>
@@ -330,8 +333,8 @@ function About() {
             {/* На чём основана методология */}
             <div className="about-method">
               <h4>На чём основана методология SoulVibe</h4>
-              <p>Создавая SoulVibe, я объединила свой интерес к исследованиям сознания с изучением архетипов Юнга, «Книги перемен» и Human Design. В работе с человеком я использую ИИ, чтобы подбирать практики с учётом его сильных сторон.</p>
-              <p>В моей методологии роль описывает вклад человека в команду, а персонаж помогает исследовать тот же талант в повседневной жизни. Через игровые задания человек пробует новые действия и замечает, что меняется.</p>
+              <p>Создавая SoulVibe, я объединила современные исследования человека, психологии и нейропластичности с древними системами знаний — архетипами Юнга, «Книгой перемен» и Human Design. На этой основе сформировалась авторская методология раскрытия талантов, объединяющая самопознание, технологии и игровые механики.</p>
+              <p>Я исследую не только потенциал отдельного человека, но и то, что возникает между людьми: как разнообразие мышления, взаимодействие талантов и объединение сильных сторон формируют коллективный интеллект и создают возможности для сверхэффективных команд.</p>
             </div>
             <p className="about-team">Корпоративные программы проводят сотрудники команды SoulVibe.</p>
           </div>
@@ -401,8 +404,8 @@ export default function Home() {
       <Ecosystem />
       {/* Вариант секции: ?role=1 — прежний (блоки), по умолчанию — веер карточек */}
       {new URLSearchParams(window.location.search).get('role') === '1' ? <RoleCharacter /> : <RoleFan />}
-      <FormatsTabs />
       <PhilosophyAir />
+      <FormatsTabs />
       <Cases />
       <About />
       <Contacts />

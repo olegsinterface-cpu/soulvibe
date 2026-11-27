@@ -129,17 +129,16 @@ export default function Calc() {
           <Link to="/" className="back-link"><span style={{ transform: 'rotate(180deg)', display: 'inline-flex' }}><Arrow size={14} /></span>На главную</Link>
           <span className="calc-free">Бесплатно</span>
           <h1 aria-label="Расчёт таланта"><span aria-hidden="true">{letters('Расчёт таланта', 0)}</span></h1>
-          <p className="lead">На сайте вы получите свою роль и её описание. Персонажа можно узнать в боте с ИИ-ментором.</p>
+          <p className="lead">На сайте вы узнаете свою роль и описание таланта.</p>
+          <p className="lead">Персонажа для раскрытия таланта можно узнать в боте с AI-ментором.</p>
           <div className="calc-steps">
-            <div className="calc-step on"><span className="n">1</span>Узнать роль<small>здесь, на сайте</small></div>
-            <div className="calc-step"><span className="n">2</span>Познакомиться с персонажем<small>в боте, по желанию</small></div>
-            <div className="calc-step"><span className="n">3</span>Работать с ИИ-ментором<small>в боте</small></div>
+            <div className="calc-step on"><span className="n">1</span>Узнать свою роль<small>на сайте</small></div>
+            <div className="calc-step"><span className="n">2</span>Начать путь раскрытия таланта<small>в Telegram</small></div>
           </div>
         </aside>
 
         <div className="form-card">
           <h2>Ваши данные для расчёта</h2>
-          <p className="hint">Все поля, кроме времени рождения, обязательны.</p>
 
           {status === 'unavailable' && (
             <div className="alert" role="alert">
@@ -242,11 +241,7 @@ export default function Calc() {
               <button type="submit" className="btn btn-primary" disabled={busy} aria-busy={busy}>
                 {busy ? <><span className="spinner" />Считаем…</> : <>Узнать свою роль <Arrow /></>}
               </button>
-              {busy ? (
-                <span className="loading-note" role="status"><span className="bar" />Обычно это занимает несколько секунд</span>
-              ) : (
-                <Link to="/primer" className="btn btn-ghost">Посмотреть пример результата</Link>
-              )}
+              {busy && <span className="loading-note" role="status"><span className="bar" />Обычно это занимает несколько секунд</span>}
             </div>
           </form>
 

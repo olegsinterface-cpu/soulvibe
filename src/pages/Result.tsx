@@ -25,8 +25,17 @@ export default function Result({ demo = false }: { demo?: boolean }) {
         <div className="res-layout">
         <TiltCard className="res-card">
           <figure className="res-photo">
-            <img src={R.character.img} alt={R.character.alt} width="753" height="1000" />
-            <figcaption>{R.character.name}</figcaption>
+            {/* персонаж скрыт: изображение размыто, имени нет — сам персонаж открывается в боте */}
+            <img src={R.character.img} alt="Персонаж скрыт — его можно узнать в боте с AI-ментором" width="753" height="1000" />
+            {/* плашка с замком по центру — ведёт в бота */}
+            <a className="res-lock" href={LINKS.bot} target="_blank" rel="noreferrer">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <rect x="4.5" y="10.5" width="15" height="10" rx="3" stroke="currentColor" strokeWidth="1.6" />
+                <path d="M8 10.5V8a4 4 0 0 1 8 0v2.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+                <circle cx="12" cy="15.5" r="1.3" fill="currentColor" />
+              </svg>
+              Персонаж откроется в боте
+            </a>
           </figure>
           <div className="res-info">
             <div className="res-head">

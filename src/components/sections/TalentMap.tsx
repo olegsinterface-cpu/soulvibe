@@ -31,12 +31,12 @@ const W = 860
 const H = 600
 const HUB = { x: 430, y: 300 }
 const NODES = [
-  { id: 'vision', title: 'Видение', roles: 'инвестор, визионер / меценат, советник совета директоров', color: C.blue, x: 280, y: 150, side: 'l', pos: 'up' },
-  { id: 'creative', title: 'Креатив', roles: 'сценарист, продуктолог, креативный директор', color: C.red, x: 580, y: 150, side: 'r', pos: 'up' },
-  { id: 'manage', title: 'Управление', roles: 'проджект-менеджер, операционный директор, руководитель команды', color: C.sky, x: 150, y: 300, side: 'l', pos: 'up' },
-  { id: 'comm', title: 'Коммуникация', roles: 'директор по маркетингу, PR-директор, бизнес-девелопер', color: C.orange, x: 710, y: 300, side: 'r', pos: 'down' },
-  { id: 'promo', title: 'Продвижение', roles: 'директор по продажам, режиссёр, менеджер по развитию', color: C.green, x: 280, y: 450, side: 'l', pos: 'down' },
-  { id: 'strategy', title: 'Стратегия', roles: 'CEO / продюсер, стратегический консультант, финансовый директор', color: C.yellow, x: 580, y: 450, side: 'r', pos: 'down' },
+  { id: 'vision', title: 'Визионер', roles: 'инвестор, визионер / меценат, советник совета директоров', color: C.blue, x: 280, y: 150, side: 'l', pos: 'up' },
+  { id: 'creative', title: 'Новатор', roles: 'сценарист, продуктолог, креативный директор', color: C.red, x: 580, y: 150, side: 'r', pos: 'up' },
+  { id: 'manage', title: 'Управленец', roles: 'проджект-менеджер, операционный директор, руководитель команды', color: C.sky, x: 150, y: 300, side: 'l', pos: 'up' },
+  { id: 'comm', title: 'Продюсер', roles: 'директор по маркетингу, PR-директор, бизнес-девелопер', color: C.orange, x: 710, y: 300, side: 'r', pos: 'down' },
+  { id: 'promo', title: 'Коммуникатор', roles: 'директор по продажам, режиссёр, менеджер по развитию', color: C.green, x: 280, y: 450, side: 'l', pos: 'down' },
+  { id: 'strategy', title: 'Стратег', roles: 'CEO / продюсер, стратегический консультант, финансовый директор', color: C.yellow, x: 580, y: 450, side: 'r', pos: 'down' },
 ] as const
 
 /* Связь от центра к узлу: выходит из центра горизонтально и плавно поворачивает к узлу */
@@ -226,8 +226,9 @@ function usePulses(root: React.RefObject<HTMLElement>) {
   }, [root])
 }
 
-/* withPath — показывать ли слева путь идеи (в «Игровой философии» — только карта) */
-export default function TalentMap({ withPath = true }: { withPath?: boolean }) {
+/* withPath — показывать ли слева путь идеи; withRoles — должности под названием таланта
+   (в «Игровой философии» — только карта и названия талантов) */
+export default function TalentMap({ withPath = true, withRoles = true }: { withPath?: boolean; withRoles?: boolean }) {
   const root = useRef<HTMLDivElement>(null)
   usePulses(root)
   // Появление схемы, когда она входит в экран: линии прорисовываются, центр проявляется,
@@ -334,7 +335,7 @@ export default function TalentMap({ withPath = true }: { withPath?: boolean }) {
             }}>
               <b>{n.title}</b>
               {/* Каждая должность — своей строкой */}
-              <span>{n.roles.split(', ').map((r) => <span key={r}>{r}</span>)}</span>
+              {withRoles && <span>{n.roles.split(', ').map((r) => <span key={r}>{r}</span>)}</span>}
             </div>
           ))}
         </div>

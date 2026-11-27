@@ -40,6 +40,11 @@
 .ft-msg-wrap { display: grid; grid-template-rows: 1fr; overflow: hidden; margin: -14px -18px; }
 .ft-msg-in { min-height: 0; display: flex; flex-direction: column; padding: 14px 18px; }
 .ft-msg-wrap + .ft-msg-wrap .ft-msg { margin-top: 20px; }
+.ft-bubble { white-space: pre-line; } /* перенос абзаца внутри сообщения (\n в тексте) */
+/* Метка времени дня в чате — приглушённая подпись по центру */
+.ft-time { align-self: center; padding: 4px 12px; border-radius: 999px; font-size: 13px; color: var(--text-3); background: rgba(255, 255, 255, 0.05); }
+.ft-msg-wrap + .ft-msg-wrap .ft-time { margin-top: 28px; }
+.ft-msg-wrap:has(.ft-time) + .ft-msg-wrap .ft-msg { margin-top: 14px; }
 .ft-bubble {
   min-width: 0; margin: 0; padding: 12px 16px;
   border-radius: 16px; font-size: 14px; line-height: 1.5;
@@ -121,6 +126,10 @@
 .ft-pair dt { font-size: 13px; color: var(--text-3); }
 .ft-pair dd { margin: 0; font-size: 15px; line-height: 1.5; color: var(--text); }
 .ft-pair > div:last-child dd { font-weight: 600; } /* результат — жирным, как в кейсах */
+/* пункты списком: каждый с новой строки, перед пунктом — маленькая тихая точка по центру первой строки */
+.ft-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.ft-list li { position: relative; padding-left: 14px; }
+.ft-list li::before { content: ''; position: absolute; left: 0; top: calc(.75em - 1.5px); width: 3px; height: 3px; border-radius: 50%; background: rgba(255, 255, 255, 0.2); }
 
 .ft-bottom { margin-top: auto; padding-top: 40px; display: flex; flex-direction: column; gap: 16px; }
 .ft-btns { display: flex; flex-wrap: wrap; gap: 8px; }
